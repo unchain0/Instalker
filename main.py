@@ -2,6 +2,7 @@ from models.Instagram import Instagram
 
 if __name__ == "__main__":
     ig = Instagram()
+    ig.login = False  # Set to True if you want to log in
     ig.list_users = {
         "jessicaellenbc",
         "nandawonderly",
