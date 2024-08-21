@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from random import randint
 from time import sleep
 from typing import Set
 
@@ -30,8 +29,6 @@ class Instagram(BaseModel):
             dirname_pattern=self.download_dir,
             save_metadata=False,
             rate_controller=lambda ctx: MyRateController(ctx),
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/127.0.0.0 Safari/537.36",
         )
 
         ic.configureOutput(prefix=func.prefix_ic)
@@ -75,22 +72,18 @@ class Instagram(BaseModel):
 
             profile = instaloader.Profile.from_username(self.L.context, user)
 
-            sleep(randint(31, 60))
-
             if not self.login:
+                self.L.download_profiles({profile}, latest_stamps=latest_stamps)
+            else:
                 self.L.download_profiles(
-                    {profile}, tagged=True, latest_stamps=latest_stamps
+                    {profile},
+                    tagged=True,
+                    # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                    highlights=True,
+                    stories=True,
+                    latest_stamps=latest_stamps,
                 )
-                continue
-
-            self.L.download_profiles(
-                {profile},
-                tagged=True,
-                # igtv=True,  # KeyError: 'edge_felix_video_timeline'
-                highlights=True,
-                stories=True,
-                latest_stamps=latest_stamps,
-            )
+            sleep(30)
 
     def __del__(self):
         func.remove_all_txt(self.download_dir)
