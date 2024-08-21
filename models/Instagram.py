@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from random import randint
+from time import sleep
 from typing import Set
 
 import instaloader
@@ -32,7 +34,7 @@ class Instagram(BaseModel):
             "Chrome/127.0.0.0 Safari/537.36",
         )
 
-        ic.prefix = func.prefix_ic()
+        ic.configureOutput(prefix=func.prefix_ic)
 
         if self.login:
             self.L.login(user=self.user, passwd=self.password)
@@ -72,6 +74,8 @@ class Instagram(BaseModel):
             latest_stamps = instaloader.LatestStamps(latest_stamps_path)
 
             profile = instaloader.Profile.from_username(self.L.context, user)
+
+            sleep(randint(31, 60))
 
             if not self.login:
                 self.L.download_profiles(
