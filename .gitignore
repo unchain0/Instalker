@@ -1,3 +1,6 @@
+# Project files
+.env
+
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json
