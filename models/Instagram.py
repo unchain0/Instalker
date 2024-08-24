@@ -1,92 +1,99 @@
 import os
 from pathlib import Path
-from time import sleep
 from typing import Set
 
 import instaloader
-from icecream import ic
 from pydantic import BaseModel, DirectoryPath, field_validator
 
 import utils.functions as func
 from models.MyRateController import MyRateController
 
-env = func.load_env()
+func.load_env()
 
 
 class Instagram(BaseModel):
     login: bool = False
-    list_users: Set[str] = {}
-    L: instaloader.Instaloader = None
+    users_set: Set[str] = {}
+    loader: instaloader.Instaloader = None
 
-    user: str = env["USER"]
-    password: str = env["PASSWORD"]
-    download_dir: DirectoryPath = env["DOWNLOAD_DIR"]
+    username: str = os.getenv("USER")
+    password: str = os.getenv("PASSWORD")
+    download_directory: DirectoryPath = os.getenv("DOWNLOAD_DIR")
+    session_directory: DirectoryPath = Path(__file__).parent.parent / "sessions"
 
     def __init__(self):
         super().__init__()
-
-        self.L = instaloader.Instaloader(
-            dirname_pattern=self.download_dir,
-            save_metadata=False,
+        self.loader = instaloader.Instaloader(
+            dirname_pattern=self.download_directory,
+            compress_json=False,
             rate_controller=lambda ctx: MyRateController(ctx),
         )
-
-        ic.configureOutput(prefix=func.prefix_ic)
-
-        if self.login:
-            self.L.login(user=self.user, passwd=self.password)
+        if self.log_in:
+            self.loader.login(user=self.username, passwd=self.password)
 
     # region Validators
-    @field_validator("user")
+    @field_validator("username")
     def check_user(cls, v: str) -> str:
         if len(v) < 2:
-            raise ValueError("user must contain at least 2 characters")
+            raise ValueError("Username must contain at least 2 characters")
         return v
 
     @field_validator("password")
     def check_password(cls, v: str) -> str:
         if len(v) < 6:
-            raise ValueError("password must contain at least 6 characters")
+            raise ValueError("Password must contain at least 6 characters")
         return v
 
-    @field_validator("download_dir")
+    @field_validator("download_directory")
     def check_download_dir(cls, v: DirectoryPath) -> DirectoryPath:
         if not os.path.exists(v):
-            raise ValueError("download_dir must be a valid directory")
+            raise ValueError("Download directory must be a valid directory")
         return v
 
-    @field_validator("list_users")
+    @field_validator("users_set")
     def check_list_users(cls, v: Set[str]) -> Set[str]:
         if not v:
-            raise ValueError("list_users must contain at least one user")
+            raise ValueError("Users set must contain at least one user")
         return v
 
     # endregion
 
-    def download(self):
-        for user in self.list_users:
-            ic(user)
+    def log_in(self) -> None:
+        if not self.log_in:
+            return
+        session_file = str(self.session_directory / self.username)
+        try:
+            self.loader.load_session_from_file(self.username, session_file)
+        except FileNotFoundError:
+            self.loader.login(user=self.username, passwd=self.password)
+            self.loader.save_session_to_file(session_file)
 
-            latest_stamps_path = Path(self.download_dir) / f"{user}.ini"
-            latest_stamps = instaloader.LatestStamps(latest_stamps_path)
-
-            profile = instaloader.Profile.from_username(self.L.context, user)
-
-            if not self.login:
-                self.L.download_profiles({profile}, latest_stamps=latest_stamps)
-            else:
-                self.L.download_profiles(
+    def download(self) -> None:
+        for user in self.users_set:
+            stamps_path = Path(self.download_directory) / f"{user}.ini"
+            latest_stamps = instaloader.LatestStamps(stamps_path)
+            profile = instaloader.Profile.from_username(self.loader.context, user)
+            if not self.log_in:
+                self.loader.download_profiles(
                     {profile},
-                    tagged=True,
-                    # igtv=True,  # KeyError: 'edge_felix_video_timeline'
-                    highlights=True,
-                    stories=True,
+                    profile_pic=True,
+                    posts=True,
                     latest_stamps=latest_stamps,
                 )
-            sleep(30)
+                continue
+            self.loader.download_profiles(
+                {profile},
+                profile_pic=True,
+                posts=True,
+                tagged=True,
+                # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                highlights=True,
+                stories=True,
+                latest_stamps=latest_stamps,
+            )
 
     def __del__(self):
-        func.remove_all_txt(self.download_dir)
+        func.remove_all_txt(self.download_directory)
 
     class Config:
         arbitrary_types_allowed = True
