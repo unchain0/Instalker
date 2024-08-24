@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from pathlib import Path
 from shutil import rmtree
 
@@ -7,16 +6,7 @@ from dotenv import load_dotenv
 from pydantic import DirectoryPath
 
 
-def prefix_ic() -> str:
-    """
-    Returns a string representing the current timestamp with a prefix.
-
-    :return: The formatted string with the current timestamp and a prefix.
-    """
-    return f'{datetime.now().strftime("%H:%M:%S")} |> '
-
-
-def load_env() -> dict[str, str]:
+def load_env():
     """
     Load environment variables from an env file.
 
@@ -29,12 +19,6 @@ def load_env() -> dict[str, str]:
         os.makedirs(env_file)
 
     load_dotenv(dotenv_path=env_file)
-
-    return {
-        "USER": os.getenv("USER"),
-        "PASSWORD": os.getenv("PASSWORD"),
-        "DOWNLOAD_DIR": os.getenv("DOWNLOAD_DIR"),
-    }
 
 
 def remove_all_txt(download_dir: DirectoryPath):
