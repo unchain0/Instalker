@@ -6,6 +6,10 @@ def main() -> None:
     ig.log_in()
     ig.users_set = {
         "jessicaellenbc",
+        "carolvidal65",
+        "carolcastropaes",
+        "juuh.amorimm",
+        "tati.souza.jed",
         "luv._.soy",
         "gabiargides",
         "julianaargides",
