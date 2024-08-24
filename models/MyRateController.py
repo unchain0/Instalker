@@ -1,9 +1,14 @@
 import time
 from random import random
 
-import instaloader
+from instaloader import InstaloaderContext, RateController
 
 
-class MyRateController(instaloader.RateController):
+class MyRateController(RateController):
+    def __init__(self, context: InstaloaderContext):
+        super().__init__(context)
+        self._earliest_next_request_time = random() + 4
+        self._iphone_earliest_next_request_time = random() + 4
+
     def sleep(self, secs: float):
-        time.sleep(random() + 1.5)
+        time.sleep(secs + random() + 4)
