@@ -29,8 +29,6 @@ class Instagram(BaseModel):
             compress_json=False,
             rate_controller=lambda ctx: MyRateController(ctx),
         )
-        if self.log_in:
-            self.loader.login(user=self.username, passwd=self.password)
 
     # region Validators
     @field_validator("username")
