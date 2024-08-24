@@ -25,6 +25,7 @@ class Instagram(BaseModel):
         super().__init__()
         self.loader = instaloader.Instaloader(
             dirname_pattern=self.download_directory,
+            save_metadata=False,
             compress_json=False,
             rate_controller=lambda ctx: MyRateController(ctx),
         )
