@@ -57,7 +57,7 @@ class Instagram(BaseModel):
 
     # endregion
 
-    def log_in(self) -> None:
+    def log_in(self):
         if not self.log_in:
             return
         session_file = str(self.session_directory / self.username)
@@ -67,7 +67,7 @@ class Instagram(BaseModel):
             self.loader.login(user=self.username, passwd=self.password)
             self.loader.save_session_to_file(session_file)
 
-    def download(self) -> None:
+    def download(self):
         for user in self.users_set:
             stamps_path = Path(self.download_directory) / f"{user}.ini"
             latest_stamps = instaloader.LatestStamps(stamps_path)
