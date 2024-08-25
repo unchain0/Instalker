@@ -207,6 +207,7 @@ def main() -> None:
         "kaiosnrj",
         "yasmin_prado.c",
         "danilocostacabeleireiro",
+        "dandara.roque",
         "espetinhonopontosaqua",
         "milena_decora",
         "danilocostafamilia",
