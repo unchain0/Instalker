@@ -6,7 +6,6 @@ import instaloader
 from pydantic import BaseModel, DirectoryPath, field_validator
 
 import utils.functions as func
-from models.MyRateController import MyRateController
 
 func.load_env()
 
@@ -27,7 +26,7 @@ class Instagram(BaseModel):
             dirname_pattern=self.download_directory,
             save_metadata=False,
             compress_json=False,
-            rate_controller=lambda ctx: MyRateController(ctx),
+            # rate_controller=lambda ctx: MyRateController(ctx),
         )
 
     # region Validators
@@ -86,7 +85,7 @@ class Instagram(BaseModel):
                 posts=True,
                 tagged=True,
                 # igtv=True,  # KeyError: 'edge_felix_video_timeline'
-                highlights=True,
+                # highlights=True,
                 stories=True,
                 latest_stamps=latest_stamps,
             )
