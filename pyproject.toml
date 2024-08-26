@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "instalker"
+version = "0.1.0"
+description = ""
+authors = ["Felippe Andrade <4drade@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+instaloader = "^4.13"
+python-dotenv = "^1.0.1"
+ruff = "^0.6.2"
+pydantic = "^2.8.2"
+ruff-lsp = "^0.0.55"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

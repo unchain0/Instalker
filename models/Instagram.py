@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from time import sleep
 from typing import Set
 
 import instaloader
@@ -72,6 +73,7 @@ class Instagram(BaseModel):
             stamps_path = Path(self.download_directory) / f"{user}.ini"
             latest_stamps = instaloader.LatestStamps(stamps_path)
             profile = instaloader.Profile.from_username(self.loader.context, user)
+            sleep(5)
             if not self.log_in:
                 self.loader.download_profiles(
                     {profile},
@@ -86,7 +88,7 @@ class Instagram(BaseModel):
                 posts=True,
                 tagged=True,
                 # igtv=True,  # KeyError: 'edge_felix_video_timeline'
-                highlights=True,
+                # highlights=True,  # Sometimes it can crash
                 stories=True,
                 latest_stamps=latest_stamps,
             )

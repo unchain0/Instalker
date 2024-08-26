@@ -5,6 +5,7 @@
     <option name="projectRuffLspExecutablePath" value="C:\Users\Felippe\Projects\Instalker\.venv\Scripts\ruff-lsp.exe" />
     <option name="runRuffOnSave" value="true" />
     <option name="useRuffFormat" value="true" />
+    <option name="useRuffLsp" value="true" />
     <option name="useRuffServer" value="true" />
   </component>
 </project>

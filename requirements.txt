@@ -1,4 +1,0 @@
-instaloader
-gallery-dl
-pydantic
-python-dotenv
