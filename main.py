@@ -5,7 +5,21 @@ def main():
     ig = Instagram(
         {
             "jessicaellenbc",
+            "anaclements.s",
             "giullinha",
+            "camilabclr",
+            "emilygoncalvess_",
+            "lorenaa_azeredo",
+            "a_luqueci",
+            "lisiatorres",
+            "japameirelles",
+            "carolttavares",
+            "cabral.camille",
+            "bru_vignoli",
+            "lou_vignolii",
+            "eurayssa_oliveira_",
+            "dudaazeredooo",
+            "samantha_moreira04",
             "raissaadonatto",
             "ferreira_gabriellydasilva",
             "btrzoliveira_",
@@ -303,6 +317,7 @@ def main():
             "laismacedo.atelier",
         }
     )
+    # ig.log_in()
     ig.download()
     ig.remove_all_txt()
 
