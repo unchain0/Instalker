@@ -1,5 +1,6 @@
 # Project template
 sessions/
+downloads/
 
 ### VisualStudioCode template
 .vscode/*
@@ -109,7 +110,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
 lib/
