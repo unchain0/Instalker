@@ -317,9 +317,9 @@ def main():
             "laismacedo.atelier",
         }
     )
-    # ig.log_in()
-    ig.download()
     ig.remove_all_txt()
+    ig.log_in()  # Comment or uncomment this line if you have been blocked
+    ig.download()
 
 
 if __name__ == "__main__":
