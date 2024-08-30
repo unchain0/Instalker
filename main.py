@@ -172,7 +172,6 @@ def main():
             "gabriellacunhaoliv",
             "evelyncosta1708",
             "alinedalgobbo.nutricionista",
-            "junassif_cuidadorainfantil",
             "beth.simeao",
             "eliza_bomfim_tricoche",
             "thayres.figueiredo",
