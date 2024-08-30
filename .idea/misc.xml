@@ -4,5 +4,5 @@
     <option name="pathToExecutable" value="C:\Users\Felippe\AppData\Local\Programs\Python\Python312\Scripts\black.exe" />
     <option name="sdkName" value="Python 3.12 (Instalker)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (Instalker)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (Instalker)" project-jdk-type="Python SDK" />
 </project>
