@@ -51,8 +51,6 @@ class Instagram:
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
                     {profile},
-                    profile_pic=True,
-                    posts=True,
                     tagged=True,
                     igtv=True,
                     latest_stamps=latest_stamps,
@@ -60,11 +58,9 @@ class Instagram:
                 continue
             self.loader.download_profiles(
                 {profile},
-                profile_pic=True,
-                posts=True,
                 tagged=True,
                 # igtv=True,  # KeyError: 'edge_felix_video_timeline'
-                # highlights=True,  # Sometimes it can give KeyError
+                # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
             )
