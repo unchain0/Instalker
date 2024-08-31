@@ -1,6 +1,7 @@
 # Project template
 sessions/
 downloads/
+/poetry.lock
 
 ### VisualStudioCode template
 .vscode/*
