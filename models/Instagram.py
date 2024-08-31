@@ -1,8 +1,9 @@
 from pathlib import Path
 from shutil import rmtree
-from typing import Set
+from typing import Optional, Set
 
 import instaloader
+from instaloader import LatestStamps, Profile
 
 import utils.constants as const
 from models.MyRateController import MyRateController
@@ -14,14 +15,42 @@ class Instagram:
         self.password = const.PASSWORD
         self.download_directory = const.DOWNLOAD_DIRECTORY
         self.session_directory = const.SESSION_DIRECTORY
+        self.log_directory = const.LOG_DIRECTORY
         self.users = users
-
         self.loader = instaloader.Instaloader(
             dirname_pattern=str(self.download_directory),
             save_metadata=False,
             compress_json=False,
             rate_controller=lambda ctx: MyRateController(ctx),
         )
+
+    def get_instagram_profile(self, username: str) -> Optional[Profile]:
+        """
+        :param username: The Instagram username of the profile to be fetched.
+        :return: An Optional[Profile] object corresponding to the username provided.
+        """
+        try:
+            return Profile.from_username(self.loader.context, username)
+        except Exception as e:
+            print(e)
+
+    def get_latest_stamps(self, user: str) -> LatestStamps:
+        """
+        :param user: Username as a string to get the latest stamps for.
+        :return: An instance of LatestStamps containing the latest stamps data.
+        """
+        stamps_path = Path(self.download_directory) / f"{user}.ini"
+        return instaloader.LatestStamps(stamps_path)
+
+    def write_log(self, user: str, msg: str):
+        """
+        :param user: The username for which the log file will be created.
+        :param msg: The message to write into the log file.
+        :return: None
+        """
+        log_file = self.log_directory / f"{user}.log"
+        with open(log_file, "w") as f:
+            f.write(msg)
 
     def log_in(self):
         """
@@ -45,9 +74,15 @@ class Instagram:
         Registered users will have their stories downloaded in addition to the aforementioned elements.
         """
         for user in self.users:
-            stamps_path = Path(self.download_directory) / f"{user}.ini"
-            latest_stamps = instaloader.LatestStamps(stamps_path)
-            profile = instaloader.Profile.from_username(self.loader.context, user)
+            profile = self.get_instagram_profile(user)
+            if not profile:
+                self.write_log(
+                    user,
+                    f"'{user}' doesn't exists",
+                )
+
+            latest_stamps = self.get_latest_stamps(user)
+
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
                     {profile},
@@ -56,10 +91,10 @@ class Instagram:
                     latest_stamps=latest_stamps,
                 )
                 continue
+
             self.loader.download_profiles(
                 {profile},
-                tagged=True,
-                # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                tagged=True,  # igtv=True,  # KeyError: 'edge_felix_video_timeline'
                 # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
@@ -78,6 +113,3 @@ class Instagram:
                 rmtree(txt) if txt.is_dir() else txt.unlink()
             except Exception as e:
                 print(f"Error to exclude {txt}: {e}")
-
-    class Config:
-        arbitrary_types_allowed = True
