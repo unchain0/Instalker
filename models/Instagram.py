@@ -94,7 +94,8 @@ class Instagram:
 
             self.loader.download_profiles(
                 {profile},
-                tagged=True,  # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                tagged=True,
+                # igtv=True,  # KeyError: 'edge_felix_video_timeline'
                 # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
