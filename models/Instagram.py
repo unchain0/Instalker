@@ -49,6 +49,9 @@ class Instagram:
         :return: None
         """
         log_file = self.log_directory / f"{user}.log"
+        if not log_file.parent.exists():
+            log_file.parent.mkdir(parents=True)
+
         with open(log_file, "w") as f:
             f.write(msg)
 
