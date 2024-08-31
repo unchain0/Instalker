@@ -86,7 +86,7 @@ def main():
             "almeidalayra234",
             "laysa_almeida16",
             "ll.keren",
-            "lucascoutinho._____",
+            "lucas_.coutinh",
             "carolcastropaes",
             "juuh.amorimm",
             "tati.souza.jed",
