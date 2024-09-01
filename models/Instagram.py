@@ -69,11 +69,11 @@ class Instagram:
         Registered users will have their stories downloaded in addition to the aforementioned elements.
         """
         for user in self.users:
+            latest_stamps = self.get_latest_stamps(user)
             profile = self.get_instagram_profile(user)
             if profile.is_private:
+                self.loader.download_profilepic_if_new(profile, latest_stamps)
                 continue
-
-            latest_stamps = self.get_latest_stamps(user)
 
             sleep(5)
 
