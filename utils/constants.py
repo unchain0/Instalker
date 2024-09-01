@@ -65,7 +65,6 @@ TARGET_USERS = {
     "julia.lalmeida",
     "eu.daniel.lima",
     "midia.monteiro1",
-    "cams_1322",
     "__jad__.eee",
     "_022_mg_",
     "isaque.schineider",
