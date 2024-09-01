@@ -11,7 +11,7 @@ from models.MyRateController import MyRateController
 
 
 class Instagram:
-    def __init__(self, users: Set[str]):
+    def __init__(self, *, users: Set[str]):
         self.username = const.USERNAME
         self.password = const.PASSWORD
         self.download_directory = const.DOWNLOAD_DIRECTORY
@@ -48,6 +48,7 @@ class Instagram:
         Logs in the user by either loading an existing session or creating a new one.
 
         If a session file corresponding to the username is found, it loads the session from the file.
+
         Otherwise, it logs in using the provided username and password and then saves the session to a file.
         """
         session_file = str(self.session_directory / self.username)
@@ -60,13 +61,20 @@ class Instagram:
     def download(self):
         """
         Downloads Instagram profile data for a list of users specified in the object.
+
         Profiles are downloaded differently based on whether the context is logged in or not.
+
         Unregistered users will have their posts, profile pictures, tagged photos, and IGTV videos downloaded.
+
         Registered users will have their stories downloaded in addition to the aforementioned elements.
         """
         for user in self.users:
             profile = self.get_instagram_profile(user)
             latest_stamps = self.get_latest_stamps(user)
+
+            if profile.is_private:
+                continue
+
             sleep(5)
 
             if not self.loader.context.is_logged_in:
@@ -90,10 +98,11 @@ class Instagram:
     def remove_all_txt(self):
         """
         Removes all .txt files from the download directory.
+
         The method traverses the download directory for files and
         directories with a .txt extension and attempts to delete them.
-        If an error occurs during the deletion
-        process, it prints an error message.
+
+        If an error occurs during the deletion process, it prints an error message.
         """
         for txt in self.download_directory.glob("*.txt"):
             try:
