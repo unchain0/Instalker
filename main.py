@@ -5,6 +5,10 @@ def main():
     ig = Instagram(
         {
             "jessicaellenbc",
+            "marcelasilva_015",
+            "_hevelincoutinho_",
+            "juhfidelis3",
+            "marialuiza_gouvea",
             "dudacardoso_31",
             "andrezaa25",
             "myllenacostasr",
