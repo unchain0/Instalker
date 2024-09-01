@@ -1,5 +1,6 @@
 from pathlib import Path
 from shutil import rmtree
+from time import sleep
 from typing import Optional, Set
 
 import instaloader
@@ -42,19 +43,6 @@ class Instagram:
         stamps_path = Path(self.download_directory) / f"{user}.ini"
         return instaloader.LatestStamps(stamps_path)
 
-    def write_log(self, user: str, msg: str):
-        """
-        :param user: The username for which the log file will be created.
-        :param msg: The message to write into the log file.
-        :return: None
-        """
-        log_file = self.log_directory / f"{user}.log"
-        if not log_file.parent.exists():
-            log_file.parent.mkdir(parents=True)
-
-        with open(log_file, "w") as f:
-            f.write(msg)
-
     def log_in(self):
         """
         Logs in the user by either loading an existing session or creating a new one.
@@ -78,13 +66,8 @@ class Instagram:
         """
         for user in self.users:
             profile = self.get_instagram_profile(user)
-            if not profile:
-                self.write_log(
-                    user,
-                    f"'{user}' doesn't exists",
-                )
-
             latest_stamps = self.get_latest_stamps(user)
+            sleep(5)
 
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
