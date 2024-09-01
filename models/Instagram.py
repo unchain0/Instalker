@@ -70,10 +70,10 @@ class Instagram:
         """
         for user in self.users:
             profile = self.get_instagram_profile(user)
-            latest_stamps = self.get_latest_stamps(user)
-
             if profile.is_private:
                 continue
+
+            latest_stamps = self.get_latest_stamps(user)
 
             sleep(5)
 
@@ -88,8 +88,7 @@ class Instagram:
 
             self.loader.download_profiles(
                 {profile},
-                tagged=True,
-                # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                tagged=True,  # igtv=True,  # KeyError: 'edge_felix_video_timeline'
                 # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
