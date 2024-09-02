@@ -5,6 +5,6 @@
     poetry install
     ```
 2. Rename `.env-example` to `.env` and change credentials.
-3. Open `main.py` and add the users what you want
-   * You can also run the script without log in, just comment the line at the end of the file.
-4. Run `main.py` and enjoy 😊
+3. Open `constants.py` in utils folder and add the desired Instagram users.
+   * You can also run the script without log in, just comment the login method in `main.py`.
+4. Run `main.py` and enjoy.
