@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 from pathlib import Path
-from random import random
 from shutil import rmtree
 from time import sleep
 from typing import Optional, Set
@@ -8,7 +8,13 @@ import instaloader
 from instaloader import LatestStamps, Profile, ProfileNotExistsException
 
 import utils.constants as const
-from models.MyRateController import MyRateController
+from random import randint
+
+
+@dataclass
+class InstagramProfile:
+    profile: Profile
+    latest_stamps: LatestStamps
 
 
 class Instagram:
@@ -23,26 +29,17 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             save_metadata=False,
             compress_json=False,
-            rate_controller=lambda ctx: MyRateController(ctx),
         )
+        self.__remove_all_txt()
 
-    def get_instagram_profile(self, username: str) -> Optional[Profile]:
-        """
-        :param username: The Instagram username of the profile to be fetched.
-        :return: An Optional[Profile] object corresponding to the username provided.
-        """
+    def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
         try:
-            return Profile.from_username(self.loader.context, username)
+            profile = Profile.from_username(self.loader.context, user)
+            latest_stamps = self.__get_latest_stamps(user)
+            return InstagramProfile(profile=profile, latest_stamps=latest_stamps)
         except ProfileNotExistsException:
-            print(f"This profile doesn't exist >>> {username}")
-
-    def get_latest_stamps(self, user: str) -> LatestStamps:
-        """
-        :param user: Username as a string to get the latest stamps for.
-        :return: An instance of LatestStamps containing the latest stamps data.
-        """
-        stamps_path = Path(self.download_directory) / f"{user}.ini"
-        return instaloader.LatestStamps(stamps_path)
+            print(f"Profile {user} not found.")
+            return None
 
     def log_in(self):
         """
@@ -70,13 +67,15 @@ class Instagram:
         profile picture and other media.
         """
         for user in self.users:
-            latest_stamps = self.get_latest_stamps(user)
-            profile = self.get_instagram_profile(user)
+            instagram_profile = self.__get_instagram_profile(user)
+            if not instagram_profile:
+                continue
 
-            if not profile:
-                break
-
-            sleep(const.TIMER + random())
+            profile, latest_stamps = (
+                instagram_profile.profile,
+                instagram_profile.latest_stamps,
+            )
+            sleep(randint(13, 55))
 
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
@@ -86,7 +85,6 @@ class Instagram:
                     latest_stamps=latest_stamps,
                 )
                 continue
-
             self.loader.download_profiles(
                 {profile},
                 tagged=True,  # igtv=True,  # KeyError: 'edge_felix_video_timeline'
@@ -95,7 +93,7 @@ class Instagram:
                 latest_stamps=latest_stamps,
             )
 
-    def remove_all_txt(self):
+    def __remove_all_txt(self):
         """
         Removes all .txt files from the download directory.
 
@@ -109,3 +107,11 @@ class Instagram:
                 rmtree(txt) if txt.is_dir() else txt.unlink()
             except Exception as e:
                 print(f"Error to exclude {txt}: {e}")
+
+    def __get_latest_stamps(self, user: str) -> LatestStamps:
+        """
+        :param user: Username as a string to get the latest stamps for.
+        :return: An instance of LatestStamps containing the latest stamps data.
+        """
+        stamps_path = Path(self.download_directory) / f"{user}.ini"
+        return instaloader.LatestStamps(stamps_path)
