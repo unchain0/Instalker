@@ -1,10 +1,11 @@
 from pathlib import Path
+from random import random
 from shutil import rmtree
 from time import sleep
 from typing import Optional, Set
 
 import instaloader
-from instaloader import LatestStamps, Profile
+from instaloader import LatestStamps, Profile, ProfileNotExistsException
 
 import utils.constants as const
 from models.MyRateController import MyRateController
@@ -32,8 +33,8 @@ class Instagram:
         """
         try:
             return Profile.from_username(self.loader.context, username)
-        except Exception as e:
-            print(e)
+        except ProfileNotExistsException:
+            print(f"This profile doesn't exist >>> {username}")
 
     def get_latest_stamps(self, user: str) -> LatestStamps:
         """
@@ -60,22 +61,22 @@ class Instagram:
 
     def download(self):
         """
-        Downloads Instagram profile data for a list of users specified in the object.
+        Download the Instagram profile pictures and associated media for the users in the user list.
 
-        Profiles are downloaded differently based on whether the context is logged in or not.
+        The method iterates through `self.users`, retrieves the latest download timestamps, and fetches the Instagram
+        profile for each user.
 
-        Unregistered users will have their posts, profile pictures, tagged photos, and IGTV videos downloaded.
-
-        Registered users will have their stories downloaded in addition to the aforementioned elements.
+        Depending on the profile's privacy settings and the loader's login status, the method handles downloading the
+        profile picture and other media.
         """
         for user in self.users:
             latest_stamps = self.get_latest_stamps(user)
             profile = self.get_instagram_profile(user)
-            if profile.is_private:
-                self.loader.download_profilepic_if_new(profile, latest_stamps)
-                continue
 
-            sleep(5)
+            if not profile:
+                break
+
+            sleep(const.TIMER + random())
 
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
