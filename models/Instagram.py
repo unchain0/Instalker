@@ -41,7 +41,7 @@ class Instagram:
             print(f"Profile {user} not found.")
             return None
 
-    def log_in(self):
+    def log_in(self) -> None:
         """
         Logs in the user by either loading an existing session or creating a new one.
 
@@ -56,7 +56,7 @@ class Instagram:
             self.loader.login(user=self.username, passwd=self.password)
             self.loader.save_session_to_file(session_file)
 
-    def download(self):
+    def download(self) -> None:
         """
         Download the Instagram profile pictures and associated media for the users in the user list.
 
@@ -93,7 +93,7 @@ class Instagram:
                 latest_stamps=latest_stamps,
             )
 
-    def __remove_all_txt(self):
+    def __remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
 
