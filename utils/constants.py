@@ -8,12 +8,16 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 USERNAME: str = os.environ["INSTA_USERNAME"]
 PASSWORD: str = os.environ["INSTA_PASSWORD"]
 
+TIMER = 5
+
 DOWNLOAD_DIRECTORY: Path = Path(__file__).parent.parent / "downloads"
 SESSION_DIRECTORY: Path = Path(__file__).parent.parent / "sessions"
 LOG_DIRECTORY: Path = Path(__file__).parent.parent / "logs"
 
+# Change the values of this variable to whatever you want
 TARGET_USERS = {
     "jessicaellenbc",
+    "academiaforcaativa",
     "marcelasilva_015",
     "mariaclara_nadu",
     "_luninh4",
