@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Instalker"
 version = "0.1.0"
-description = "Stalker profiles on Instagram"
+description = "Download profiles on Instagram"
 authors = ["Felippe Andrade <4drade@gmail.com>"]
 readme = "README.md"
 
