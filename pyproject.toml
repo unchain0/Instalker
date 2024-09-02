@@ -18,3 +18,8 @@ mypy = "1.11.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+untyped_calls_exclude = ["instaloader"]
