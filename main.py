@@ -2,7 +2,7 @@ import utils.constants as const
 from models.Instagram import Instagram
 
 
-def main():
+def main() -> None:
     ig = Instagram(users=const.TARGET_USERS)
     ig.log_in()  # Comment or uncomment this line if you have been blocked
     ig.download()
