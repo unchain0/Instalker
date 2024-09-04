@@ -37,6 +37,7 @@ class Instagram:
         Logs in to Instagram using the provided username and password.
         """
         session_file = str(self.session_directory / self.username)
+        Path(session_file).parent.mkdir(parents=True, exist_ok=True)
         try:
             self.loader.load_session_from_file(self.username, session_file)
         except FileNotFoundError:
