@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from random import randint
 from shutil import rmtree
 from time import sleep
 from typing import Optional, Set
@@ -8,7 +9,6 @@ import instaloader
 from instaloader import LatestStamps, Profile, ProfileNotExistsException
 
 import utils.constants as const
-from random import randint
 
 
 @dataclass
@@ -32,22 +32,9 @@ class Instagram:
         )
         self.__remove_all_txt()
 
-    def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
-        try:
-            profile = Profile.from_username(self.loader.context, user)
-            latest_stamps = self.__get_latest_stamps(user)
-            return InstagramProfile(profile=profile, latest_stamps=latest_stamps)
-        except ProfileNotExistsException:
-            print(f"Profile {user} not found.")
-            return None
-
     def log_in(self) -> None:
         """
-        Logs in the user by either loading an existing session or creating a new one.
-
-        If a session file corresponding to the username is found, it loads the session from the file.
-
-        Otherwise, it logs in using the provided username and password and then saves the session to a file.
+        Logs in to Instagram using the provided username and password.
         """
         session_file = str(self.session_directory / self.username)
         try:
@@ -58,18 +45,12 @@ class Instagram:
 
     def download(self) -> None:
         """
-        Download the Instagram profile pictures and associated media for the users in the user list.
-
-        The method iterates through `self.users`, retrieves the latest download timestamps, and fetches the Instagram
-        profile for each user.
-
-        Depending on the profile's privacy settings and the loader's login status, the method handles downloading the
-        profile picture and other media.
+        Downloads Instagram profiles for the given users.
         """
         for user in self.users:
             instagram_profile = self.__get_instagram_profile(user)
             if not instagram_profile:
-                continue
+                break
 
             profile, latest_stamps = (
                 instagram_profile.profile,
@@ -87,20 +68,37 @@ class Instagram:
                 continue
             self.loader.download_profiles(
                 {profile},
-                tagged=True,  # igtv=True,  # KeyError: 'edge_felix_video_timeline'
+                tagged=True,
                 # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
             )
 
+    def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
+        """
+        Retrieves the Instagram profile of a given user.
+
+        Args:
+            user (str): The username of the Instagram profile to retrieve.
+
+        Returns:
+            Optional[InstagramProfile]: An instance of the InstagramProfile class,
+            or None if the profile does not exist.
+        """
+        try:
+            profile = Profile.from_username(self.loader.context, user)
+            latest_stamps = self.__get_latest_stamps(user)
+            return InstagramProfile(profile=profile, latest_stamps=latest_stamps)
+        except ProfileNotExistsException:
+            print(f"Profile {user} not found.")
+            return None
+
     def __remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
 
-        The method traverses the download directory for files and
-        directories with a .txt extension and attempts to delete them.
-
-        If an error occurs during the deletion process, it prints an error message.
+        Raises:
+            OSError: If there is an error while removing the file.
         """
         for txt in self.download_directory.glob("*.txt"):
             try:
@@ -110,8 +108,13 @@ class Instagram:
 
     def __get_latest_stamps(self, user: str) -> LatestStamps:
         """
-        :param user: Username as a string to get the latest stamps for.
-        :return: An instance of LatestStamps containing the latest stamps data.
+        Retrieves the latest stamps for a given user.
+
+        Args:
+            user (str): The username of the user.
+
+        Returns:
+            LatestStamps: An instance of the LatestStamps class.
         """
         stamps_path = Path(self.download_directory) / f"{user}.ini"
         return instaloader.LatestStamps(stamps_path)
