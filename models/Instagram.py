@@ -1,7 +1,11 @@
 from dataclasses import dataclass
+from glob import glob
+from os.path import expanduser
 from pathlib import Path
+from platform import system
 from random import randint
 from shutil import rmtree
+from sqlite3 import OperationalError, connect
 from time import sleep
 from typing import Optional, Set
 
@@ -42,8 +46,57 @@ class Instagram:
         try:
             self.loader.load_session_from_file(self.username, session_file)
         except FileNotFoundError:
-            self.loader.login(user=self.username, passwd=self.password)
-            self.loader.save_session_to_file(session_file)
+            try:
+                cookiefile = self.get_cookiefile()
+                self.import_session(cookiefile, session_file)
+            except Exception as e:
+                print(f"Error importing session from cookies: {e}")
+                self.loader.login(user=self.username, passwd=self.password)
+                self.loader.save_session_to_file(session_file)
+
+    def get_cookiefile(self) -> str:
+        """
+        Retrieves the Firefox cookies.sqlite file path.
+
+        Returns:
+            str: The path to the cookies.sqlite file.
+        """
+        default_cookiefile = {
+            "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
+            "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
+        }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
+        cookiefiles = glob(expanduser(default_cookiefile))
+        if not cookiefiles:
+            raise SystemExit("No Firefox cookies.sqlite file found.")
+        return cookiefiles[0]
+
+    def import_session(self, cookiefile: str, sessionfile: str) -> None:
+        """
+        Imports the session from Firefox cookies and saves it to a session file.
+
+        Args:
+            cookiefile (str): The path to the cookies.sqlite file.
+            sessionfile (str): The path to the session file.
+        """
+        print("Using cookies from {}.".format(cookiefile))
+        conn = connect(f"file:{cookiefile}?immutable=1", uri=True)
+        try:
+            cookie_data = conn.execute(
+                "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+            )
+        except OperationalError:
+            cookie_data = conn.execute(
+                "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
+            )
+        self.loader.context._session.cookies.update(cookie_data)
+        if not self.loader.test_login():
+            raise SystemExit(
+                "Not logged in. Are you logged in successfully in Firefox?"
+            )
+        username = self.loader.context.username
+        print("Imported session cookie for {}.".format(username))
+        self.loader.context.username = username
+        self.loader.save_session_to_file(sessionfile)
 
     def download(self) -> None:
         """
