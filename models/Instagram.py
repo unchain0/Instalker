@@ -29,6 +29,7 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             save_metadata=False,
             compress_json=False,
+            rate_controller=lambda ctx: instaloader.RateController(ctx),
         )
         self.remove_all_txt()
 
@@ -57,7 +58,6 @@ class Instagram:
                 instagram_profile.profile,
                 instagram_profile.latest_stamps,
             )
-            sleep(randint(13, 55))
 
             if not self.loader.context.is_logged_in:
                 self.loader.download_profiles(
@@ -66,14 +66,15 @@ class Instagram:
                     igtv=True,
                     latest_stamps=latest_stamps,
                 )
-                continue
-            self.loader.download_profiles(
-                {profile},
-                tagged=True,
-                # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
-                stories=True,
-                latest_stamps=latest_stamps,
-            )
+            else:
+                self.loader.download_profiles(
+                    {profile},
+                    tagged=True,
+                    # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
+                    stories=True,
+                    latest_stamps=latest_stamps,
+                )
+            sleep(randint(13, 55))
 
     def get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
         """
