@@ -30,7 +30,7 @@ class Instagram:
             save_metadata=False,
             compress_json=False,
         )
-        self.__remove_all_txt()
+        self.remove_all_txt()
 
     def log_in(self) -> None:
         """
@@ -48,7 +48,7 @@ class Instagram:
         Downloads Instagram profiles for the given users.
         """
         for user in self.users:
-            instagram_profile = self.__get_instagram_profile(user)
+            instagram_profile = self.get_instagram_profile(user)
             if not instagram_profile:
                 break
 
@@ -74,7 +74,7 @@ class Instagram:
                 latest_stamps=latest_stamps,
             )
 
-    def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
+    def get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
         """
         Retrieves the Instagram profile of a given user.
 
@@ -87,13 +87,13 @@ class Instagram:
         """
         try:
             profile = Profile.from_username(self.loader.context, user)
-            latest_stamps = self.__get_latest_stamps(user)
+            latest_stamps = self.get_latest_stamps(user)
             return InstagramProfile(profile=profile, latest_stamps=latest_stamps)
         except ProfileNotExistsException:
             print(f"Profile {user} not found.")
             return None
 
-    def __remove_all_txt(self) -> None:
+    def remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
 
@@ -106,7 +106,7 @@ class Instagram:
             except Exception as e:
                 print(f"Error to exclude {txt}: {e}")
 
-    def __get_latest_stamps(self, user: str) -> LatestStamps:
+    def get_latest_stamps(self, user: str) -> LatestStamps:
         """
         Retrieves the latest stamps for a given user.
 
