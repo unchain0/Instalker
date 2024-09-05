@@ -13,9 +13,14 @@ SESSION_DIRECTORY: Path = Path(__file__).parent.parent / "sessions"
 LOG_DIRECTORY: Path = Path(__file__).parent.parent / "logs"
 
 # Change the values of this variable to whatever you want
-# noinspection SpellCheckingInspection
 TARGET_USERS = {
     "jessicaellenbc",
+    "laysmp",
+    "dailyyjota",
+    "marefonseca_",
+    "marafonimille",
+    "iingrid_motta",
+    "dalvabr_",
     "academiaforcaativa",
     "marcelasilva_015",
     "mariaclara_nadu",
