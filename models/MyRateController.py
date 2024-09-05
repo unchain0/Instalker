@@ -1,5 +1,5 @@
-import time
 from random import randint
+from time import sleep
 
 from instaloader import InstaloaderContext, RateController
 
@@ -11,4 +11,4 @@ class MyRateController(RateController):
         self._iphone_earliest_next_request_time = randint(13, 55)
 
     def sleep(self, secs: float) -> None:
-        time.sleep(secs + randint(13, 55))
+        sleep(secs + randint(13, 55))
