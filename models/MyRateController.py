@@ -5,6 +5,5 @@ from instaloader import RateController
 
 
 class MyRateController(RateController):
-    def wait_before_query(self, query_type: str) -> None:
-        sleep(randint(20, 40))
-        return None
+    def sleep(self, secs: float) -> None:
+        sleep(secs + randint(7, 20))
