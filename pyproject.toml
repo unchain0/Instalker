@@ -9,11 +9,13 @@ readme = "README.md"
 python = "^3.12"
 instaloader = "^4.13.1"
 python-dotenv = "^1.0.1"
+tqdm = "^4.66.5"
 
 [tool.poetry.group.dev.dependencies]
 ruff-lsp = "^0.0.55"
 ruff = "^0.6.3"
 mypy = "^1.11.2"
+types-tqdm = "^4.66.0.20240417"
 
 [tool.mypy]
 python_version = "3.12"
@@ -25,10 +27,6 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E501", "I"]
-
-[tool.ruff.format]
-docstring-code-format = true
-docstring-code-line-length = 88
 
 [build-system]
 requires = ["poetry-core"]
