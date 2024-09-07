@@ -24,7 +24,6 @@ class Instagram:
         self.password = const.PASSWORD
         self.download_directory = const.DOWNLOAD_DIRECTORY
         self.session_directory = const.SESSION_DIRECTORY
-        self.log_directory = const.LOG_DIRECTORY
         self.users = users
         self.loader = instaloader.Instaloader(
             quiet=True,
