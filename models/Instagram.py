@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from random import randint
+from shutil import rmtree
 from time import sleep
 from typing import Optional, Set
 
@@ -34,6 +35,7 @@ class Instagram:
             fatal_status_codes=[400, 401, 429],
             sanitize_paths=True,
         )
+        self.__remove_all_txt()
         self.__log_in()
 
     def download(self) -> None:
@@ -109,3 +111,16 @@ class Instagram:
         """
         stamps_path = Path(self.download_directory) / f"{user}.ini"
         return instaloader.LatestStamps(stamps_path)
+
+    def __remove_all_txt(self) -> None:
+        """
+        Removes all .txt files from the download directory.
+
+        Raises:
+            OSError: If there is an error while removing the file.
+        """
+        for txt in self.download_directory.glob("*.txt"):
+            try:
+                rmtree(txt) if txt.is_dir() else txt.unlink()
+            except OSError as e:
+                print(f"Error: {e}")
