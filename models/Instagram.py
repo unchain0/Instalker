@@ -32,6 +32,7 @@ class Instagram:
             compress_json=False,
             rate_controller=lambda ctx: instaloader.RateController(ctx),
             fatal_status_codes=[400, 401, 429],
+            sanitize_paths=True,
         )
         self.__log_in()
 
