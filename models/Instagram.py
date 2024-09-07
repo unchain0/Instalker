@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
+from random import randint
+from time import sleep
 from typing import Optional, Set
 
 import instaloader
@@ -29,7 +31,7 @@ class Instagram:
             save_metadata=False,
             compress_json=False,
             rate_controller=lambda ctx: instaloader.RateController(ctx),
-            fatal_status_codes=[400, 429],
+            fatal_status_codes=[400, 401, 429],
         )
         self.__log_in()
 
@@ -41,8 +43,10 @@ class Instagram:
             self.users,
             desc="Downloading profiles",
             unit="profile",
+            leave=False,
         ):
             instagram_profile = self.__get_instagram_profile(user)
+            sleep(randint(7, 20))
             if not instagram_profile:
                 break
 
@@ -50,6 +54,8 @@ class Instagram:
                 instagram_profile.profile,
                 instagram_profile.latest_stamps,
             )
+            if profile.is_private:
+                continue
 
             self.loader.download_profiles(
                 {profile},
