@@ -10,10 +10,32 @@ PASSWORD: str = os.environ["INSTA_PASSWORD"]
 
 DOWNLOAD_DIRECTORY: Path = Path(__file__).parent.parent / "downloads"
 SESSION_DIRECTORY: Path = Path(__file__).parent.parent / "sessions"
-LOG_DIRECTORY: Path = Path(__file__).parent.parent / "logs"
 
 # Change the values of this variable to whatever you want
 TARGET_USERS = {
+    "natyzinha.___",
+    "julyanaso_",
+    "lara.ndrad",
+    "zinhamonteiro",
+    "zzchalhoub",
+    "ksnataly",
+    "karinacampos0511",
+    "sheilavidal38",
+    "ariene07dias",
+    "psi.yasminprado",
+    "b.lfotografia",
+    "leticia.m.lemos",
+    "hillaryleeh",
+    "022_nathxsz",
+    "lala.borella",
+    "mariana_vieira317",
+    "lorenaofrnds",
+    "g9878b",
+    "paulhamoutinho",
+    "levies_viana",
+    "kelcrisviana",
+    "mellothg",
+    "pulpfition",
     "jessicaellenbc",
     "laysmp",
     "dailyyjota",
