@@ -1,9 +1,9 @@
 from random import randint
 from time import sleep
 
-from instaloader import RateController
+import instaloader
 
 
-class MyRateController(RateController):
+class MyRateController(instaloader.RateController):
     def sleep(self, secs: float) -> None:
-        sleep(secs + randint(7, 20))
+        sleep(secs + randint(13, 20))

@@ -9,16 +9,35 @@ USERNAME: str = os.environ["INSTA_USERNAME"]
 PASSWORD: str = os.environ["INSTA_PASSWORD"]
 
 DOWNLOAD_DIRECTORY: Path = Path(__file__).parent.parent / "downloads"
-SESSION_DIRECTORY: Path = Path(__file__).parent.parent / "sessions"
 
-# Change the values of this variable to whatever @ instagram you want
+# Change the values of this variable to whatever you want
 TARGET_USERS = {
+    # "flavio.taveiros",
+    "natyzinha.___",
+    "julyanaso_",
+    "lara.ndrad",
+    "zinhamonteiro",
+    "zzchalhoub",
+    "ksnataly",
+    "karinacampos0511",
+    "sheilavidal38",
+    "ariene07dias",
+    "psi.yasminprado",
+    "b.lfotografia",
+    "leticia.m.lemos",
+    "hillaryleeh",
+    "022_nathxsz",
+    "lala.borella",
+    "mariana_vieira317",
+    "lorenaofrnds",
+    "g9878b",
+    "paulhamoutinho",
+    "levies_viana",
+    "kelcrisviana",
+    "mellothg",
+    "pulpfition",
     "jessicaellenbc",
     "laysmp",
-    "marialuiza_santanaa0",
-    "anycar0liny",
-    "nano.wop",
-    "vt.tinvi",
     "dailyyjota",
     "marefonseca_",
     "marafonimille",
@@ -59,6 +78,7 @@ TARGET_USERS = {
     "cabral.camille",
     "bru_vignoli",
     "lou_vignolii",
+    "eurayssa_oliveira_",
     "dudaazeredooo",
     "samantha_moreira04",
     "raissaadonatto",
@@ -157,7 +177,6 @@ TARGET_USERS = {
     "aylasakua.aa",
     "mvmantuano",
     "criss.magalhaes_",
-    "flavio.taveiros",
     "sidinhopereira",
     "silva.madileine",
     "nick_ali001",
