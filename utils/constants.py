@@ -9,10 +9,10 @@ USERNAME: str = os.environ["INSTA_USERNAME"]
 PASSWORD: str = os.environ["INSTA_PASSWORD"]
 
 DOWNLOAD_DIRECTORY: Path = Path(__file__).parent.parent / "downloads"
-SESSION_DIRECTORY: Path = Path(__file__).parent.parent / "sessions"
 
 # Change the values of this variable to whatever you want
 TARGET_USERS = {
+    # "flavio.taveiros",
     "natyzinha.___",
     "julyanaso_",
     "lara.ndrad",
@@ -177,7 +177,6 @@ TARGET_USERS = {
     "aylasakua.aa",
     "mvmantuano",
     "criss.magalhaes_",
-    "flavio.taveiros",
     "sidinhopereira",
     "silva.madileine",
     "nick_ali001",
