@@ -4,6 +4,7 @@ from models.Instagram import Instagram
 
 def main() -> None:
     ig = Instagram(users=const.TARGET_USERS)
+    print(ig)
     ig.download()
 
 
