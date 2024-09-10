@@ -10,6 +10,7 @@ from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
 import utils.constants as const
+from models.MyRateController import MyRateController
 
 
 @dataclass
@@ -23,20 +24,17 @@ class Instagram:
         self.username = const.USERNAME
         self.password = const.PASSWORD
         self.download_directory = const.DOWNLOAD_DIRECTORY
-        self.session_directory = const.SESSION_DIRECTORY
-        self.log_directory = const.LOG_DIRECTORY
         self.users = users
         self.loader = instaloader.Instaloader(
             quiet=True,
             dirname_pattern=str(self.download_directory),
             save_metadata=False,
             compress_json=False,
-            rate_controller=lambda ctx: instaloader.RateController(ctx),
-            fatal_status_codes=[400, 401, 429],
+            rate_controller=lambda ctx: MyRateController(ctx),
             sanitize_paths=True,
         )
         self.__remove_all_txt()
-        self.__log_in()
+        self.loader.login(user=self.username, passwd=self.password)
 
     def download(self) -> None:
         """
@@ -49,9 +47,9 @@ class Instagram:
             leave=False,
         ):
             instagram_profile = self.__get_instagram_profile(user)
-            sleep(randint(7, 20))
+            sleep(randint(13, 20))
             if not instagram_profile:
-                break
+                continue
 
             profile, latest_stamps = (
                 instagram_profile.profile,
@@ -63,22 +61,11 @@ class Instagram:
             self.loader.download_profiles(
                 {profile},
                 tagged=True,
+                # igtv=True,
                 # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
                 stories=True,
                 latest_stamps=latest_stamps,
             )
-
-    def __log_in(self) -> None:
-        """
-        Logs in to Instagram using the provided username and password.
-        """
-        session_file = str(self.session_directory / self.username)
-        Path(session_file).parent.mkdir(parents=True, exist_ok=True)
-        try:
-            self.loader.load_session_from_file(self.username, session_file)
-        except FileNotFoundError:
-            self.loader.login(user=self.username, passwd=self.password)
-            self.loader.save_session_to_file(session_file)
 
     def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
         """
@@ -124,3 +111,6 @@ class Instagram:
                 rmtree(txt) if txt.is_dir() else txt.unlink()
             except OSError as e:
                 print(f"Error: {e}")
+
+    def __str__(self) -> str:
+        return f"Logged as {self.loader.context.username}"
