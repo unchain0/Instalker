@@ -28,8 +28,6 @@ class Instagram:
             quiet=True,
             save_metadata=False,
             sanitize_paths=True,
-            max_connection_attempts=10,
-            request_timeout=100.0,
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[400, 401, 404, 429],
         )
