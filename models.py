@@ -31,6 +31,7 @@ class Instagram:
             max_connection_attempts=10,
             request_timeout=100.0,
             rate_controller=lambda ctx: MyRateController(ctx),
+            fatal_status_codes=[400, 401, 404, 429],
         )
         self.__remove_all_txt()
         self.loader.login(user=self.username, passwd=self.password)
