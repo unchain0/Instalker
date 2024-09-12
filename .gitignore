@@ -1,7 +1,6 @@
 # Project template
 sessions/
 downloads/
-/poetry.lock
 /latest_stamps.ini
 
 ### VisualStudioCode template
