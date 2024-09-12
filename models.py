@@ -37,7 +37,7 @@ class Instagram:
 
     def download(self) -> None:
         """
-        Downloads Instagram profiles for the given users.
+        Downloads Instagram profiles for the users in the set.
         """
         progress_bar = tqdm(
             self.users,
