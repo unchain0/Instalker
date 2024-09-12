@@ -8,12 +8,11 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 USERNAME: str = os.environ["INSTA_USERNAME"]
 PASSWORD: str = os.environ["INSTA_PASSWORD"]
 
-DOWNLOAD_DIRECTORY: Path = Path(__file__).parent.parent / "downloads"
+DOWNLOAD_DIRECTORY: Path = Path(__file__).parent / "downloads"
+SESSION_DIRECTORY: Path = Path(__file__).parent / "sessions"
 
 # Change the values of this variable to whatever you want
 TARGET_USERS = {
-    # "flavio.taveiros",
-    "natyzinha.___",
     "julyanaso_",
     "lara.ndrad",
     "zinhamonteiro",
@@ -28,7 +27,6 @@ TARGET_USERS = {
     "hillaryleeh",
     "022_nathxsz",
     "lala.borella",
-    "mariana_vieira317",
     "lorenaofrnds",
     "g9878b",
     "paulhamoutinho",
@@ -37,13 +35,11 @@ TARGET_USERS = {
     "mellothg",
     "pulpfition",
     "jessicaellenbc",
-    "laysmp",
     "dailyyjota",
     "marefonseca_",
     "marafonimille",
     "iingrid_motta",
     "dalvabr_",
-    "academiaforcaativa",
     "marcelasilva_015",
     "mariaclara_nadu",
     "_luninh4",
@@ -78,17 +74,14 @@ TARGET_USERS = {
     "cabral.camille",
     "bru_vignoli",
     "lou_vignolii",
-    "eurayssa_oliveira_",
     "dudaazeredooo",
     "samantha_moreira04",
-    "raissaadonatto",
     "ferreira_gabriellydasilva",
     "btrzoliveira_",
     "bia_a_pires",
     "maria_clara0liveir4",
     "gabrielcliam",
     "vivih_cristina6464",
-    "eurayssa_oliveira_",
     "rodrigo.85",
     "sarahcaastro_",
     "sandy_sarahh",
@@ -109,7 +102,6 @@ TARGET_USERS = {
     "isaque.schineider",
     "giovana.fagner",
     "rosanesuzart",
-    "rosimerigalaxe",
     "xeniamachado",
     "robertaarrabalatelier",
     "roberto_carlos__e_silvia",
@@ -183,6 +175,7 @@ TARGET_USERS = {
     "lucasys.peres",
     "endhyara",
     "blendoonsalles",
+    "ana_luiza.a.a",
     "_isabellevilla",
     "mincastro1999",
     "majjuu__",
@@ -229,7 +222,6 @@ TARGET_USERS = {
     "dayara_beral",
     "gabriellacunhaoliv",
     "evelyncosta1708",
-    "alinedalgobbo.nutricionista",
     "juliana_cuidadorainfantil",
     "beth.simeao",
     "eliza_bomfim_tricoche",
@@ -315,7 +307,6 @@ TARGET_USERS = {
     "yasmin_prado.c",
     "danilocostacabeleireiro",
     "dandara.roque",
-    "espetinhonopontosaqua",
     "milena_decora",
     "danilocostafamilia",
     "rafa_dos.cortes",

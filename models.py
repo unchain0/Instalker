@@ -1,37 +1,36 @@
-from dataclasses import dataclass
+import time
 from pathlib import Path
 from random import randint
 from shutil import rmtree
-from time import sleep
-from typing import Optional, Set
+from typing import Optional
 
 import instaloader
 from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
-import utils.constants as const
-from models.MyRateController import MyRateController
+import constants as const
 
 
-@dataclass
-class InstagramProfile:
-    profile: Profile
-    latest_stamps: LatestStamps
+class MyRateController(instaloader.RateController):
+    def sleep(self, secs: float) -> None:
+        time.sleep(secs + randint(13, 20))
 
 
 class Instagram:
-    def __init__(self, *, users: Set[str]):
+    def __init__(self) -> None:
         self.username = const.USERNAME
         self.password = const.PASSWORD
         self.download_directory = const.DOWNLOAD_DIRECTORY
-        self.users = users
+        self.users = const.TARGET_USERS
+        self.latest_stamps = self.__get_latest_stamps()
         self.loader = instaloader.Instaloader(
-            quiet=True,
             dirname_pattern=str(self.download_directory),
+            quiet=True,
             save_metadata=False,
-            compress_json=False,
-            rate_controller=lambda ctx: MyRateController(ctx),
             sanitize_paths=True,
+            max_connection_attempts=10,
+            request_timeout=100.0,
+            rate_controller=lambda ctx: MyRateController(ctx),
         )
         self.__remove_all_txt()
         self.loader.login(user=self.username, passwd=self.password)
@@ -40,63 +39,57 @@ class Instagram:
         """
         Downloads Instagram profiles for the given users.
         """
-        for user in tqdm(
+        progress_bar = tqdm(
             self.users,
             desc="Downloading profiles",
             unit="profile",
-            leave=False,
-        ):
-            instagram_profile = self.__get_instagram_profile(user)
-            sleep(randint(13, 20))
-            if not instagram_profile:
+            postfix={"user": None},
+        )
+        for user in progress_bar:
+            progress_bar.set_postfix({"user": user})
+            profile = self.__get_instagram_profile(user)
+            time.sleep(randint(13, 20))
+            if profile is None:
                 continue
-
-            profile, latest_stamps = (
-                instagram_profile.profile,
-                instagram_profile.latest_stamps,
-            )
             if profile.is_private:
+                self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
             self.loader.download_profiles(
                 {profile},
                 tagged=True,
                 # igtv=True,
-                # highlights=True,  # Latest stamps doesn't save data >>> 4.13.1
+                # highlights=True,  # Latest stamps doesn't save highlights - 4.13.1
                 stories=True,
-                latest_stamps=latest_stamps,
+                latest_stamps=self.latest_stamps,
             )
 
-    def __get_instagram_profile(self, user: str) -> Optional[InstagramProfile]:
+    def __get_instagram_profile(self, user: str) -> Optional[Profile]:
         """
         Retrieves the Instagram profile of a given user.
 
         Args:
-            user (str): The username of the Instagram profile to retrieve.
+            user (str): The username of the Instagram user.
 
         Returns:
-            Optional[InstagramProfile]: An instance of the InstagramProfile class,
+            Optional[Profile]: The Instagram profile of the user,
             or None if the profile does not exist.
         """
         try:
-            profile = Profile.from_username(self.loader.context, user)
-            latest_stamps = self.__get_latest_stamps(user)
-            return InstagramProfile(profile=profile, latest_stamps=latest_stamps)
+            profile: Profile = Profile.from_username(self.loader.context, user)
+            return profile
         except ProfileNotExistsException:
             print(f"Profile {user} not found.")
             return None
 
-    def __get_latest_stamps(self, user: str) -> LatestStamps:
+    def __get_latest_stamps(self) -> LatestStamps:
         """
         Retrieves the latest stamps for a given user.
-
-        Args:
-            user (str): The username of the user.
 
         Returns:
             LatestStamps: An instance of the LatestStamps class.
         """
-        stamps_path = Path(self.download_directory) / f"{user}.ini"
+        stamps_path = Path(__file__).parent / "latest_stamps.ini"
         return instaloader.LatestStamps(stamps_path)
 
     def __remove_all_txt(self) -> None:
