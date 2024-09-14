@@ -5,11 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-USERNAME: str = os.environ["INSTA_USERNAME"]
-PASSWORD: str = os.environ["INSTA_PASSWORD"]
-
-DOWNLOAD_DIRECTORY: Path = Path(__file__).parent / "downloads"
-SESSION_DIRECTORY: Path = Path(__file__).parent / "sessions"
+USERNAME = os.environ["INSTA_USERNAME"]
+DOWNLOAD_DIRECTORY = Path(__file__).parent / "downloads"
+SESSION_DIRECTORY = Path(__file__).parent / "sessions"
 
 # Change the values of this variable to whatever you want
 TARGET_USERS = {

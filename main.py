@@ -3,7 +3,6 @@ from models import Instagram
 
 def main() -> None:
     ig = Instagram()
-    print(ig)
     ig.download()
 
 
