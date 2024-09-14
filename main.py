@@ -3,7 +3,7 @@ from models import Instagram
 
 def main() -> None:
     ig = Instagram()
-    ig.download()
+    ig.run()
 
 
 if __name__ == "__main__":

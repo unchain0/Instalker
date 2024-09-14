@@ -40,8 +40,11 @@ class Instagram:
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[400, 401, 404, 429],
         )
+
+    def run(self) -> None:
         self.remove_all_txt()
         self.import_session()
+        self.download()
 
     def download(self) -> None:
         """
@@ -51,6 +54,7 @@ class Instagram:
             self.users,
             desc="Downloading profiles",
             unit="profile",
+            leave=False,
             postfix={"user": None},
         )
         for user in progress_bar:
