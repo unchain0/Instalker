@@ -6,6 +6,11 @@ Instalker is a tool designed to automate the download of Instagram profiles.
 Using the instaloader library, the project allows users to log in to their Instagram accounts and download information from specific profiles in an efficient and organized way.
 The tool is configurable and can be customized to meet users' specific needs.
 
+## Requirements
+
+1. [Mozilla Firefox](https://www.mozilla.org/pt-BR/firefox/new/)
+2. Instagram account
+
 ## Setup
 
 1. Clone this repo
@@ -25,6 +30,5 @@ The tool is configurable and can be customized to meet users' specific needs.
     poetry install
     ```
 
-2. Rename `.env-example` to `.env` and change credentials.
-3. Open `constants.py` in utils folder and add the desired Instagram users.
-4. Run `main.py` and enjoy.
+2. Open `constants.py` in utils folder and add the desired Instagram users.
+3. Run `main.py` and enjoy.
