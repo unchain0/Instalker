@@ -1,5 +1,4 @@
 import time
-from argparse import ArgumentParser
 from glob import glob
 from os.path import expanduser
 from pathlib import Path
@@ -17,18 +16,12 @@ import constants as const
 
 
 class MyRateController(instaloader.RateController):
-    def __init__(self, context: instaloader.InstaloaderContext):
-        super().__init__(context)
-        self._earliest_next_request_time = randint(13, 20)
-        self._iphone_earliest_next_request_time = randint(13, 20)
-
     def sleep(self, secs: float) -> None:
         time.sleep(secs + randint(13, 20))
 
 
 class Instagram:
     def __init__(self) -> None:
-        self.username = const.USERNAME
         self.download_directory = const.DOWNLOAD_DIRECTORY
         self.users = const.TARGET_USERS
         self.latest_stamps = self.__get_latest_stamps()
@@ -38,7 +31,6 @@ class Instagram:
             save_metadata=False,
             sanitize_paths=True,
             rate_controller=lambda ctx: MyRateController(ctx),
-            fatal_status_codes=[400, 401, 404, 429],
         )
 
     def run(self) -> None:
@@ -48,7 +40,19 @@ class Instagram:
 
     def download(self) -> None:
         """
-        Downloads Instagram profiles for the users in the set.
+        Downloads Instagram profiles and their content.
+
+        This method iterates over a list of users and downloads their profiles.
+        It displays a progress bar to indicate the download progress. For each user,
+        it fetches the Instagram profile and checks if the profile is private. If the
+        profile is private, it only downloads the profile picture if it's new. If the
+        profile is not private, it downloads the profile content including tagged posts
+        and stories.
+
+        Note:
+            - The method skips profiles that cannot be fetched.
+            - The method currently does not download IGTV content and highlights due to
+              known issues.
         """
         progress_bar = tqdm(
             self.users,
@@ -60,7 +64,6 @@ class Instagram:
         for user in progress_bar:
             progress_bar.set_postfix({"user": user})
             profile = self.__get_instagram_profile(user)
-            time.sleep(randint(13, 20))
             if profile is None:
                 continue
             if profile.is_private:
@@ -70,7 +73,7 @@ class Instagram:
             self.loader.download_profiles(
                 {profile},
                 tagged=True,
-                # igtv=True,
+                # igtv=True,  # KeyError
                 # highlights=True,  # Latest stamps doesn't save highlights - 4.13.1
                 stories=True,
                 latest_stamps=self.latest_stamps,
@@ -119,6 +122,19 @@ class Instagram:
 
     @staticmethod
     def __get_cookiefile() -> Optional[str]:
+        """
+        Retrieves the path to the Firefox cookies.sqlite file based on the system.
+
+        This method determines the default location of the Firefox cookies.sqlite file
+        for Windows, macOS (Darwin), and other Unix-like systems. It then uses glob to
+        find the actual file path.
+
+        Returns:
+            Optional[str]: The path to the cookies.sqlite file if found.
+
+        Raises:
+            SystemExit: If no cookies.sqlite file is found.
+        """
         default_cookiefile = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
             "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
@@ -129,17 +145,37 @@ class Instagram:
         return cookiefiles[0]
 
     def import_session(self) -> None:
+        """
+        Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
+
+        This method attempts to locate the Firefox cookies.sqlite file and extract
+        cookies related to Instagram. It then updates the session cookies in the
+        loader's context and verifies the login status by testing the login.
+        If the login is successful, it saves the session to a file.
+
+        Raises:
+            SystemExit: If the cookies.sqlite file is not found or if the user is not
+                        logged in successfully in Firefox.
+
+        Side Effects:
+            - Updates the session cookies in the loader's context.
+            - Saves the session to a file in the session directory.
+
+        Prints:
+            - The path of the cookies file being used.
+            - The username for which the session cookie is imported.
+        """
         cookie_file = self.__get_cookiefile()
         if not cookie_file:
             raise SystemExit("No Firefox cookies.sqlite file found. Use -c COOKIEFILE.")
         print("Using cookies from {}.".format(cookie_file))
-        conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
+        con = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
-            cookie_data = conn.execute(
+            cookie_data = con.execute(
                 "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
             )
         except OperationalError:
-            cookie_data = conn.execute(
+            cookie_data = con.execute(
                 "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
             )
         self.loader.context._session.cookies.update(cookie_data)
@@ -152,5 +188,5 @@ class Instagram:
         self.loader.context.username = username  # type: ignore
         session_dir = const.SESSION_DIRECTORY
         session_dir.mkdir(exist_ok=True)
-        session_file = str(const.SESSION_DIRECTORY / self.username)
+        session_file = str(const.SESSION_DIRECTORY / username)
         self.loader.save_session_to_file(session_file)

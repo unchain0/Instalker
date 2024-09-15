@@ -1,19 +1,14 @@
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).parent.parent / ".env")
-
-USERNAME = os.environ["INSTA_USERNAME"]
 DOWNLOAD_DIRECTORY = Path(__file__).parent / "downloads"
 SESSION_DIRECTORY = Path(__file__).parent / "sessions"
 
-# Change the values of this variable to whatever you want
+# Change the TARGET_USERS values for the users you want to download
 TARGET_USERS = {
     "zzchalhoub",
     "sheilavidal38",
     "ariene07dias",
+    "dailyyjota",
     "psi.yasminprado",
     "b.lfotografia",
     "leticia.m.lemos",
@@ -26,8 +21,6 @@ TARGET_USERS = {
     "juan_.matos",
     "anabeatriz_2312",
     "yasmimcardossojw",
-    "isbxla._",
-    "_hevelincoutinho_",
     "juhfidelis3",
     "marialuiza_gouvea",
     "dudacardoso_31",
@@ -37,7 +30,6 @@ TARGET_USERS = {
     "lorenaa_azeredo",
     "a_luqueci",
     "carolttavares",
-    "bru_vignoli",
     "lou_vignolii",
     "dudaazeredooo",
     "samantha_moreira04",
@@ -78,16 +70,14 @@ TARGET_USERS = {
     "coutinho_og",
     "laysa_almeida16",
     "ll.keren",
-    "lucas_.coutinh",
+    "lucascoutinh_",
     "david.bebiano.9",
     "jessicaellenpiercer",
     "gustavosoares_fbj",
     "goulartlila",
     "danieleteles2016",
     "bazarebrechodaju",
-    "aylasakua.aa",
-    "mvmantuano",
-    "criss.magalhaes_",
+    "crisssg1",
     "sidinhopereira",
     "silva.madileine",
     "nick_ali001",
@@ -102,7 +92,6 @@ TARGET_USERS = {
     "_yasxcr",
     "nandawonderly",
     "natyy_almeida15",
-    "iamdudajordao",
     "anapaulinof",
     "juh_jubaa",
     "jeancastilhoo",
@@ -142,7 +131,6 @@ TARGET_USERS = {
     "martaoliveira9446",
     "rafa_rodrigues.s",
     "laraluqueci",
-    "brunapnl",
     "letygoulart",
     "guilherme_neves7",
     "jessedeabreuca",
@@ -169,7 +157,6 @@ TARGET_USERS = {
     "nicol.e0606",
     "maldonadoojessica",
     "luhlua_",
-    "luanarreguengo",
     "souzamariiana6",
     "lucasc.soares14",
     "david_bebiano",
