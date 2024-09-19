@@ -1,23 +1,31 @@
+import logging
+import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from os.path import expanduser
 from pathlib import Path
 from platform import system
-from random import randint
+from secrets import randbelow
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
-from typing import Optional
 
 import instaloader
 from instaloader import LatestStamps, Profile, ProfileNotExistsException
+from PIL import Image, UnidentifiedImageError
 from tqdm import tqdm
 
 import constants as const
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 
 class MyRateController(instaloader.RateController):
     def sleep(self, secs: float) -> None:
-        time.sleep(secs + randint(13, 20))
+        time.sleep(secs + randbelow(8) + 15)
 
 
 class Instagram:
@@ -31,11 +39,14 @@ class Instagram:
             save_metadata=False,
             sanitize_paths=True,
             rate_controller=lambda ctx: MyRateController(ctx),
+            fatal_status_codes=[429],
         )
+        self.image_cleaner = ImageCleaner(self.download_directory)
 
     def run(self) -> None:
-        self.remove_all_txt()
-        self.import_session()
+        self.__remove_all_txt()
+        self.image_cleaner.remove_small_images()
+        self.__import_session()
         self.download()
 
     def download(self) -> None:
@@ -48,11 +59,6 @@ class Instagram:
         profile is private, it only downloads the profile picture if it's new. If the
         profile is not private, it downloads the profile content including tagged posts
         and stories.
-
-        Note:
-            - The method skips profiles that cannot be fetched.
-            - The method currently does not download IGTV content and highlights due to
-              known issues.
         """
         progress_bar = tqdm(
             self.users,
@@ -73,13 +79,11 @@ class Instagram:
             self.loader.download_profiles(
                 {profile},
                 tagged=True,
-                # igtv=True,  # KeyError
-                # highlights=True,  # Latest stamps doesn't save highlights - 4.13.1
                 stories=True,
                 latest_stamps=self.latest_stamps,
             )
 
-    def __get_instagram_profile(self, user: str) -> Optional[Profile]:
+    def __get_instagram_profile(self, user: str) -> Profile | None:
         """
         Retrieves the Instagram profile of a given user.
 
@@ -87,15 +91,16 @@ class Instagram:
             user (str): The username of the Instagram user.
 
         Returns:
-            Optional[Profile]: The Instagram profile of the user,
-            or None if the profile does not exist.
+            Profile | None: The Instagram profile of the user, or None if the profile does not exist.
+
         """
         try:
             profile: Profile = Profile.from_username(self.loader.context, user)
-            return profile
         except ProfileNotExistsException:
-            print(f"Profile {user} not found.")
+            logging.warning("Profile %s not found.", user)
             return None
+        else:
+            return profile
 
     def __get_latest_stamps(self) -> LatestStamps:
         """
@@ -103,25 +108,59 @@ class Instagram:
 
         Returns:
             LatestStamps: An instance of the LatestStamps class.
+
         """
         stamps_path = Path(__file__).parent / "latest_stamps.ini"
         return instaloader.LatestStamps(stamps_path)
 
-    def remove_all_txt(self) -> None:
+    def __remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
-
-        Raises:
-            OSError: If there is an error while removing the file.
         """
         for txt in self.download_directory.glob("*.txt"):
-            try:
-                rmtree(txt) if txt.is_dir() else txt.unlink()
-            except OSError as e:
-                print(f"Error: {e}")
+            rmtree(txt) if txt.is_dir() else txt.unlink()
+
+    def __import_session(self) -> None:
+        """
+        Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
+
+        This method attempts to locate the Firefox cookies.sqlite file and extract
+        cookies related to Instagram. It then updates the session cookies in the
+        loader's context and verifies the login status by testing the login.
+        If the login is successful, it saves the session to a file.
+
+        Raises:
+            SystemExit: If the cookies.sqlite file is not found or if the user is not logged in successfully in Firefox.
+
+        """
+        cookie_file = self.__get_cookiefile()
+        if not cookie_file:
+            msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
+            raise SystemExit(msg)
+        logging.info("Using cookies from %s.", cookie_file)
+        con = connect(f"file:{cookie_file}?immutable=1", uri=True)
+        try:
+            cookie_data = con.execute(
+                "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'",
+            )
+        except OperationalError:
+            cookie_data = con.execute(
+                "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
+            )
+        self.loader.context._session.cookies.update(cookie_data)
+        username = self.loader.test_login()
+        if not username:
+            msg = "Not logged in. Are you logged in successfully in Firefox?"
+            raise SystemExit(msg)
+        logging.info("Imported session cookie for %s.", username)
+        self.loader.context.username = username  # type: ignore[assignment]
+        session_dir = const.SESSION_DIRECTORY
+        session_dir.mkdir(exist_ok=True)
+        session_file = str(const.SESSION_DIRECTORY / username)
+        self.loader.save_session_to_file(session_file)
 
     @staticmethod
-    def __get_cookiefile() -> Optional[str]:
+    def __get_cookiefile() -> str | None:
         """
         Retrieves the path to the Firefox cookies.sqlite file based on the system.
 
@@ -134,59 +173,70 @@ class Instagram:
 
         Raises:
             SystemExit: If no cookies.sqlite file is found.
+
         """
         default_cookiefile = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
             "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
-        cookiefiles = glob(expanduser(default_cookiefile))
-        if not cookiefiles:
-            raise SystemExit("No Firefox cookies.sqlite file found. Use -c COOKIEFILE.")
-        return cookiefiles[0]
+        cookie_files = glob(expanduser(default_cookiefile))
+        if not cookie_files:
+            msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
+            raise SystemExit(msg)
+        return cookie_files[0]
 
-    def import_session(self) -> None:
+
+class ImageCleaner:
+    MIN_DIMENSION: int = 256
+    IMAGE_EXTENSIONS = re.compile(r"\.(jpg|png|webp)$", re.IGNORECASE)
+
+    def __init__(self, download_directory: Path) -> None:
+        self.download_directory = download_directory
+
+    def remove_small_images(self) -> None:
         """
-        Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
-
-        This method attempts to locate the Firefox cookies.sqlite file and extract
-        cookies related to Instagram. It then updates the session cookies in the
-        loader's context and verifies the login status by testing the login.
-        If the login is successful, it saves the session to a file.
-
-        Raises:
-            SystemExit: If the cookies.sqlite file is not found or if the user is not
-                        logged in successfully in Firefox.
-
-        Side Effects:
-            - Updates the session cookies in the loader's context.
-            - Saves the session to a file in the session directory.
-
-        Prints:
-            - The path of the cookies file being used.
-            - The username for which the session cookie is imported.
+        Removes all image files with dimensions smaller than 256x256 pixels from the download directory.
         """
-        cookie_file = self.__get_cookiefile()
-        if not cookie_file:
-            raise SystemExit("No Firefox cookies.sqlite file found. Use -c COOKIEFILE.")
-        print("Using cookies from {}.".format(cookie_file))
-        con = connect(f"file:{cookie_file}?immutable=1", uri=True)
+        logging.info(
+            "Starting to remove small images from the download directory.",
+        )
+
+        image_files = self.__get_image_files()
+
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.__process_image, image_files)
+
+    def __get_image_files(self) -> list[Path]:
+        """
+        Gets the list of image files in the download directory that match the valid extensions.
+        """
+        return [
+            file_path
+            for file_path in self.download_directory.glob("*")
+            if self.IMAGE_EXTENSIONS.search(str(file_path))
+        ]
+
+    def __process_image(self, image_file: Path) -> None:
+        """
+        Processes an image file by checking its dimensions and deleting it if it is small or invalid.
+
+        Args:
+            image_file (Path): The path to the image file to be processed.
+
+        """
         try:
-            cookie_data = con.execute(
-                "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+            with Image.open(image_file) as img:
+                if img.width < self.MIN_DIMENSION or img.height < self.MIN_DIMENSION:
+                    logging.info(
+                        "Removendo imagem pequena: %s (Dimensões: %dx%d)",
+                        image_file,
+                        img.width,
+                        img.height,
+                    )
+                    image_file.unlink()
+        except UnidentifiedImageError:
+            logging.warning(
+                "Arquivo não identificado como imagem, removendo: %s",
+                image_file,
             )
-        except OperationalError:
-            cookie_data = con.execute(
-                "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
-            )
-        self.loader.context._session.cookies.update(cookie_data)
-        username = self.loader.test_login()
-        if not username:
-            raise SystemExit(
-                "Not logged in. Are you logged in successfully in Firefox?"
-            )
-        print("Imported session cookie for {}.".format(username))
-        self.loader.context.username = username  # type: ignore
-        session_dir = const.SESSION_DIRECTORY
-        session_dir.mkdir(exist_ok=True)
-        session_file = str(const.SESSION_DIRECTORY / username)
-        self.loader.save_session_to_file(session_file)
+            image_file.unlink()
