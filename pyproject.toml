@@ -25,6 +25,7 @@ untyped_calls_exclude = ["instaloader"]
 
 [tool.ruff]
 target-version = "py312"
+line-length = 88
 
 [tool.ruff.lint]
 select = ["ALL"]
