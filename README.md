@@ -32,7 +32,7 @@ The tool is configurable and can be customized to meet users' specific needs.
     poetry install
     ```
 
-2. Open `target_users-example.json` and add the desired Instagram users.
+2. Copy and paste `target_users-example.json` then rename it to `target_users.json`
+3. Open `target_users.json` and add Instagram users.
     * Do not include @ symbol.
-3. Rename `target_users-example.json` to `target_users.json`
 4. Run `main.py` and enjoy.
