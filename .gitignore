@@ -2,6 +2,7 @@
 sessions/
 downloads/
 /latest_stamps.ini
+/target_users.json
 
 ### VisualStudioCode template
 .vscode/*

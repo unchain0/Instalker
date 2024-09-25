@@ -1,4 +1,4 @@
-from models import Instagram
+from classes import Instagram
 
 
 def main() -> None:
