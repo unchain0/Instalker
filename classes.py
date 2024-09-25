@@ -140,6 +140,7 @@ class Instagram:
         if not cookie_file:
             msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
             raise SystemExit(msg)
+
         logging.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
@@ -155,6 +156,7 @@ class Instagram:
         if not username:
             msg = "Not logged in. Are you logged in successfully in Firefox?"
             raise SystemExit(msg)
+
         logging.info("Imported session cookie for %s.", username)
         self.loader.context.username = username
 
