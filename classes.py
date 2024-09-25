@@ -41,6 +41,14 @@ class Instagram:
         )
 
     def run(self) -> None:
+        """
+        Executes the main sequence of operations for the class.
+
+        This method performs the following steps:
+        1. Removes all text files.
+        2. Imports the session data.
+        3. Initiates the download process.
+        """
         self.__remove_all_txt()
         self.__import_session()
         self.download()
@@ -133,13 +141,13 @@ class Instagram:
             msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
             raise SystemExit(msg)
         logging.info("Using cookies from %s.", cookie_file)
-        con = connect(f"file:{cookie_file}?immutable=1", uri=True)
+        conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
-            cookie_data = con.execute(
+            cookie_data = conn.execute(
                 "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'",
             )
         except OperationalError:
-            cookie_data = con.execute(
+            cookie_data = conn.execute(
                 "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
             )
         self.loader.context._session.cookies.update(cookie_data)
@@ -148,7 +156,7 @@ class Instagram:
             msg = "Not logged in. Are you logged in successfully in Firefox?"
             raise SystemExit(msg)
         logging.info("Imported session cookie for %s.", username)
-        self.loader.context.username = username  # type: ignore[assignment]
+        self.loader.context.username = username
 
     @staticmethod
     def __get_cookiefile() -> str | None:
@@ -160,7 +168,7 @@ class Instagram:
         find the actual file path.
 
         Returns:
-            Optional[str]: The path to the cookies.sqlite file if found.
+            str | None: The path to the cookies.sqlite file if found.
 
         Raises:
             SystemExit: If no cookies.sqlite file is found.
