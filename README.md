@@ -1,38 +1,56 @@
-# Instalker
+# 📸 Instalker
 
-## About the project
+**Instalker** é uma ferramenta poderosa que automatiza o download de perfis do Instagram, utilizando a biblioteca `instaloader` para uma coleta eficiente e organizada de dados.
 
-Instalker is a tool designed to automate the download of Instagram profiles.
-Using the instaloader library, the project allows users to log in to their Instagram accounts and download information from specific profiles in an efficient and organized way.
-The tool is configurable and can be customized to meet users' specific needs.
+## ✨ Funcionalidades Principais
 
-## Requirements
+- **Downloads Automatizados**: Obtenha informações de perfis com apenas alguns passos.
+- **Configuração Personalizável**: Ajuste alvos e configurações conforme suas necessidades.
+- **Eficiência**: Usa cookies para uma performance mais ágil.
+
+## 🛠️ Requisitos
 
 1. [Mozilla Firefox](https://www.mozilla.org/pt-BR/firefox/new/)
-2. Instagram account
+2. Conta no Instagram (alternativa)
 
-## Setup
+## 🚀 Configuração
 
-1. Clone this repo.
+1. Clone o repositório:
 
     ```bash
     git clone --depth=1 https://github.com/bysedd/Instalker.git
     ```
 
-2. Open folder in your code editor preferred.
-3. Log in to your Instagram account via Firefox.
-    * The project uses cookies to make downloads more efficient. So **don't use** the option to delete cookies when you exit Firefox.
-4. Follow the instructions bellow.
+2. Abra o projeto no seu editor de código preferido.
+3. Faça login no Instagram pelo Firefox.
+   - **Nota**: Mantenha os cookies para facilitar os downloads.
+4. Siga as instruções abaixo.
 
-## Instructions
+## 📝 Instruções
 
-1. Install environment (make sure you have [poetry](https://python-poetry.org/docs/#installation) installed)
+1. Instale as dependências (com [Poetry](https://python-poetry.org/docs/#installation)):
 
     ```bash
     poetry install
     ```
 
-2. Copy and paste `target_users-example.json` then rename it to `target_users.json`
-3. Open `target_users.json` and add Instagram users.
-    * Do not include @ symbol.
-4. Run `main.py` and enjoy.
+2. Crie e configure os usuários-alvo:
+   - Copie o arquivo `target_users-example.json` e renomeie para `target_users.json`.
+   - Adicione os nomes de usuário do Instagram (sem o símbolo `@`).
+
+3. Execute o script:
+
+    ```bash
+    python main.py
+    ```
+
+    E aproveite os downloads automatizados!
+
+## 💡 Dicas
+
+- Mantenha os cookies no Firefox para evitar logins frequentes.
+- Personalize o arquivo `target_users.json` conforme necessário.
+
+---
+
+Bom uso! 😎
