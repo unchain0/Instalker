@@ -4,8 +4,8 @@
 
 ## ✨ Funcionalidades Principais
 
-- **Downloads Automatizados**: Obtenha informações de perfis com apenas alguns passos.
-- **Configuração Personalizável**: Ajuste alvos e configurações conforme suas necessidades.
+- **Downloads Automatizados**: Obtenha fotos e vídeos de perfis com apenas alguns passos.
+- **Configuração Personalizável**: Ajuste alvos conforme suas necessidades.
 - **Eficiência**: Usa cookies para uma performance mais ágil.
 
 ## 🛠️ Requisitos
@@ -43,13 +43,6 @@
     ```bash
     python main.py
     ```
-
-    E aproveite os downloads automatizados!
-
-## 💡 Dicas
-
-- Mantenha os cookies no Firefox para evitar logins frequentes.
-- Personalize o arquivo `target_users.json` conforme necessário.
 
 ---
 
