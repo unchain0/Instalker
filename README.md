@@ -1,6 +1,6 @@
 # 📸 Instalker
 
-**Instalker** é uma ferramenta poderosa que automatiza o download de perfis do Instagram, utilizando a biblioteca `instaloader` para uma coleta eficiente e organizada de dados.
+**Instalker** é um projeto que automatiza o download de perfis do Instagram, utilizando a biblioteca `instaloader` para uma coleta eficiente e organizada de dados.
 
 ## ✨ Funcionalidades Principais
 
