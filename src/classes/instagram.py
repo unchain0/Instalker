@@ -1,29 +1,17 @@
 import logging
-import time
 from glob import glob
 from os.path import expanduser
-from pathlib import Path
 from platform import system
-from secrets import randbelow
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
 
 import instaloader
-from instaloader import LatestStamps, Profile, ProfileNotExistsException, RateController
+from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
-import constants as const
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y/%m/%d %H:%M:%S",
-)
-
-
-class MyRateController(RateController):
-    def sleep(self, secs: float) -> None:
-        time.sleep(secs + randbelow(8) + 15)
+import src.constants as const
+from src.classes.image_manager import ImageManager
+from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
@@ -39,6 +27,8 @@ class Instagram:
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
+        self.image_manager = ImageManager(self.download_directory)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self) -> None:
         """
@@ -46,10 +36,12 @@ class Instagram:
 
         This method performs the following steps:
         1. Removes all text files.
-        2. Imports the session data.
-        3. Initiates the download process.
+        2. Removes all images.
+        3. Imports the session data.
+        4. Initiates the download process.
         """
         self.remove_all_txt()
+        self.image_manager.remove_old_images()
         self.import_session()
         self.download()
 
@@ -111,7 +103,7 @@ class Instagram:
             msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
             raise SystemExit(msg)
 
-        logging.info("Using cookies from %s.", cookie_file)
+        self.logger.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
             cookie_data = conn.execute(
@@ -127,7 +119,7 @@ class Instagram:
             msg = "Not logged in. Are you logged in successfully in Firefox?"
             raise SystemExit(msg)
 
-        logging.info("Imported session cookie for %s.", username)
+        self.logger.info("Imported session cookie for %s.", username)
         self.loader.context.username = username
 
     def __get_instagram_profile(self, username: str) -> Profile | None:
@@ -157,7 +149,7 @@ class Instagram:
             LatestStamps: An instance of the LatestStamps class.
 
         """
-        stamps_path = Path(__file__).parent / "latest_stamps.ini"
+        stamps_path = const.ROOT_DIRECTORY / "latest_stamps.ini"
         return instaloader.LatestStamps(stamps_path)
 
     @staticmethod
