@@ -1,8 +1,8 @@
 # Project template
-sessions/
 downloads/
-/latest_stamps.ini
-/target_users.json
+latest_stamps.ini
+target_users.json
+logs/
 
 ### VisualStudioCode template
 .vscode/*
