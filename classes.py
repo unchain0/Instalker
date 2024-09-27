@@ -49,8 +49,8 @@ class Instagram:
         2. Imports the session data.
         3. Initiates the download process.
         """
-        self.__remove_all_txt()
-        self.__import_session()
+        self.remove_all_txt()
+        self.import_session()
         self.download()
 
     def download(self) -> None:
@@ -86,44 +86,14 @@ class Instagram:
                 latest_stamps=self.latest_stamps,
             )
 
-    def __get_instagram_profile(self, user: str) -> Profile | None:
-        """
-        Retrieves the Instagram profile of a given user.
-
-        Args:
-            user (str): The username of the Instagram user.
-
-        Returns:
-            Profile | None: The Instagram profile of the user,
-            or None if the profile does not exist.
-
-        """
-        try:
-            profile: Profile = Profile.from_username(self.loader.context, user)
-        except ProfileNotExistsException:
-            tqdm.write(f"Profile {user} not found.")
-            return None
-        return profile
-
-    def __get_latest_stamps(self) -> LatestStamps:
-        """
-        Retrieves the latest stamps for a given user.
-
-        Returns:
-            LatestStamps: An instance of the LatestStamps class.
-
-        """
-        stamps_path = Path(__file__).parent / "latest_stamps.ini"
-        return instaloader.LatestStamps(stamps_path)
-
-    def __remove_all_txt(self) -> None:
+    def remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
         """
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
-    def __import_session(self) -> None:
+    def import_session(self) -> None:
         """
         Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
 
@@ -159,6 +129,36 @@ class Instagram:
 
         logging.info("Imported session cookie for %s.", username)
         self.loader.context.username = username
+
+    def __get_instagram_profile(self, username: str) -> Profile | None:
+        """
+        Retrieves the Instagram profile of a given user.
+
+        Args:
+            username (str): The username of the Instagram user.
+
+        Returns:
+            Profile | None: The Instagram profile of the user,
+            or None if the profile does not exist.
+
+        """
+        try:
+            profile: Profile = Profile.from_username(self.loader.context, username)
+        except ProfileNotExistsException:
+            tqdm.write(f"Profile {username} not found.")
+            return None
+        return profile
+
+    def __get_latest_stamps(self) -> LatestStamps:
+        """
+        Retrieves the latest stamps for a given user.
+
+        Returns:
+            LatestStamps: An instance of the LatestStamps class.
+
+        """
+        stamps_path = Path(__file__).parent / "latest_stamps.ini"
+        return instaloader.LatestStamps(stamps_path)
 
     @staticmethod
     def __get_cookiefile() -> str | None:
