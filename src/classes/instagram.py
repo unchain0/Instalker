@@ -77,6 +77,7 @@ class Instagram:
                 stories=True,
                 latest_stamps=self.latest_stamps,
             )
+        self.logger.info("Download completed.")
 
     def remove_all_txt(self) -> None:
         """

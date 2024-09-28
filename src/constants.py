@@ -10,4 +10,6 @@ DOWNLOAD_DIRECTORY = ROOT_DIRECTORY / "downloads"
 DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 with Path.open(ROOT_DIRECTORY / "target_users.json") as f:
-    TARGET_USERS: list[str] = json.load(f)
+    TARGET_USERS: list[str] = list(
+        set(json.load(f)),
+    )
