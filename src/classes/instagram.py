@@ -1,29 +1,17 @@
 import logging
-import time
 from glob import glob
 from os.path import expanduser
-from pathlib import Path
 from platform import system
-from secrets import randbelow
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
 
 import instaloader
-from instaloader import LatestStamps, Profile, ProfileNotExistsException, RateController
+from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
-import constants as const
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y/%m/%d %H:%M:%S",
-)
-
-
-class MyRateController(RateController):
-    def sleep(self, secs: float) -> None:
-        time.sleep(secs + randbelow(8) + 15)
+import src.constants as const
+from src.classes.image_manager import ImageManager
+from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
@@ -39,6 +27,8 @@ class Instagram:
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
+        self.image_manager = ImageManager(self.download_directory)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self) -> None:
         """
@@ -46,11 +36,13 @@ class Instagram:
 
         This method performs the following steps:
         1. Removes all text files.
-        2. Imports the session data.
-        3. Initiates the download process.
+        2. Removes all images.
+        3. Imports the session data.
+        4. Initiates the download process.
         """
-        self.__remove_all_txt()
-        self.__import_session()
+        self.remove_all_txt()
+        self.image_manager.remove_old_images()
+        self.import_session()
         self.download()
 
     def download(self) -> None:
@@ -85,45 +77,16 @@ class Instagram:
                 stories=True,
                 latest_stamps=self.latest_stamps,
             )
+        self.logger.info("Download completed.")
 
-    def __get_instagram_profile(self, user: str) -> Profile | None:
-        """
-        Retrieves the Instagram profile of a given user.
-
-        Args:
-            user (str): The username of the Instagram user.
-
-        Returns:
-            Profile | None: The Instagram profile of the user,
-            or None if the profile does not exist.
-
-        """
-        try:
-            profile: Profile = Profile.from_username(self.loader.context, user)
-        except ProfileNotExistsException:
-            tqdm.write(f"Profile {user} not found.")
-            return None
-        return profile
-
-    def __get_latest_stamps(self) -> LatestStamps:
-        """
-        Retrieves the latest stamps for a given user.
-
-        Returns:
-            LatestStamps: An instance of the LatestStamps class.
-
-        """
-        stamps_path = Path(__file__).parent / "latest_stamps.ini"
-        return instaloader.LatestStamps(stamps_path)
-
-    def __remove_all_txt(self) -> None:
+    def remove_all_txt(self) -> None:
         """
         Removes all .txt files from the download directory.
         """
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
-    def __import_session(self) -> None:
+    def import_session(self) -> None:
         """
         Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
 
@@ -140,7 +103,8 @@ class Instagram:
         if not cookie_file:
             msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
             raise SystemExit(msg)
-        logging.info("Using cookies from %s.", cookie_file)
+
+        self.logger.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
             cookie_data = conn.execute(
@@ -155,8 +119,39 @@ class Instagram:
         if not username:
             msg = "Not logged in. Are you logged in successfully in Firefox?"
             raise SystemExit(msg)
-        logging.info("Imported session cookie for %s.", username)
+
+        self.logger.info("Imported session cookie for %s.", username)
         self.loader.context.username = username
+
+    def __get_instagram_profile(self, username: str) -> Profile | None:
+        """
+        Retrieves the Instagram profile of a given user.
+
+        Args:
+            username (str): The username of the Instagram user.
+
+        Returns:
+            Profile | None: The Instagram profile of the user,
+            or None if the profile does not exist.
+
+        """
+        try:
+            profile: Profile = Profile.from_username(self.loader.context, username)
+        except ProfileNotExistsException:
+            tqdm.write(f"Profile {username} not found.")
+            return None
+        return profile
+
+    def __get_latest_stamps(self) -> LatestStamps:
+        """
+        Retrieves the latest stamps for a given user.
+
+        Returns:
+            LatestStamps: An instance of the LatestStamps class.
+
+        """
+        stamps_path = const.ROOT_DIRECTORY / "latest_stamps.ini"
+        return instaloader.LatestStamps(stamps_path)
 
     @staticmethod
     def __get_cookiefile() -> str | None:

@@ -23,7 +23,7 @@
 
 2. Abra o projeto no seu editor de código preferido.
 3. Faça login no Instagram pelo Firefox.
-   - **Nota**: Mantenha os cookies para facilitar os downloads.
+   - **Nota**: Mantenha os cookies salvos no seu perfil do Firefox.
 4. Siga as instruções abaixo.
 
 ## 📝 Instruções
