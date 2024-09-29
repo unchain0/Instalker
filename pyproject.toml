@@ -24,35 +24,10 @@ disable_error_code = ["assignment"]
 
 [tool.ruff]
 target-version = "py312"
-line-length = 88
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = [
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "D200",
-    "D205",
-    "D212",
-    "D400",
-    "D401",
-    "D415",
-    "E402",   # false positives for local imports
-    "E501",   # line too long
-    "TRY003", # external messages in exceptions are too verbose
-    "TD002",
-    "TD003",
-    "FIX002", # too verbose descriptions of todos
-    "SLF001",
-    "PTH111",
-    "PTH207",
-]
+ignore = ["PTH111", "PTH207", "SLF001"]
 
 [build-system]
 requires = ["poetry-core"]
