@@ -1,3 +1,14 @@
+"""The module provides methods to automate the download of Instagram profiles.
+
+Classes:
+    InstagramProfile: Represents an Instagram profile with its most recent data.
+    Instagram: Manages the authentication and download of Instagram profiles.
+
+Functions:
+    get_cookiefile: Gets the path of the Firefox cookies.sqlite file.
+    import_session: Imports an Instagram session from Firefox cookies.
+"""
+
 import logging
 from glob import glob
 from os.path import expanduser
@@ -15,7 +26,14 @@ from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
+    """A class to manage Instagram profile downloads and session handling.
+
+    This class provides methods to download Instagram profiles, manage session cookies,
+    and handle image and text file cleanup operations.
+    """
+
     def __init__(self) -> None:
+        """Initialize the Instagram class with default settings and configurations."""
         self.download_directory = const.DOWNLOAD_DIRECTORY
         self.users = const.TARGET_USERS
         self.latest_stamps = self.__get_latest_stamps()
@@ -31,8 +49,7 @@ class Instagram:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self) -> None:
-        """
-        Executes the main sequence of operations for the class.
+        """Execute the main sequence of operations for the class.
 
         This method performs the following steps:
         1. Removes all text files.
@@ -46,8 +63,7 @@ class Instagram:
         self.download()
 
     def download(self) -> None:
-        """
-        Downloads Instagram profiles and their content.
+        """Download Instagram profiles and their content.
 
         This method iterates over a list of users and downloads their profiles.
         It displays a progress bar to indicate the download progress. For each user,
@@ -80,15 +96,12 @@ class Instagram:
         self.logger.info("Download completed.")
 
     def remove_all_txt(self) -> None:
-        """
-        Removes all .txt files from the download directory.
-        """
+        """Remove all .txt files from the download directory."""
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
     def import_session(self) -> None:
-        """
-        Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
+        """Import the session cookies from Firefox's cookies.sqlite file for Instagram.
 
         This method attempts to locate the Firefox cookies.sqlite file and extract
         cookies related to Instagram. It then updates the session cookies in the
@@ -124,8 +137,7 @@ class Instagram:
         self.loader.context.username = username
 
     def __get_instagram_profile(self, username: str) -> Profile | None:
-        """
-        Retrieves the Instagram profile of a given user.
+        """Retrieve the Instagram profile of a given user.
 
         Args:
             username (str): The username of the Instagram user.
@@ -143,8 +155,7 @@ class Instagram:
         return profile
 
     def __get_latest_stamps(self) -> LatestStamps:
-        """
-        Retrieves the latest stamps for a given user.
+        """Retrieve the latest stamps for a given user.
 
         Returns:
             LatestStamps: An instance of the LatestStamps class.
@@ -155,8 +166,7 @@ class Instagram:
 
     @staticmethod
     def __get_cookiefile() -> str | None:
-        """
-        Retrieves the path to the Firefox cookies.sqlite file based on the system.
+        """Retrieve the path to the Firefox cookies.sqlite file based on the system.
 
         This method determines the default location of the Firefox cookies.sqlite file
         for Windows, macOS (Darwin), and other Unix-like systems. It then uses glob to
