@@ -33,7 +33,9 @@ class ImageManager:
     def __init__(self, download_directory: Path) -> None:
         """Initialize the class with the download directory.
 
-        :param download_directory: Path to the directory where the images are stored.
+        Args:
+            download_directory (Path): The directory to manage image files in.
+
         """
         self.download_directory = download_directory
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -41,7 +43,9 @@ class ImageManager:
     def get_media_files(self) -> list[Path]:
         """Get all the image files in the download directory and its subdirectories.
 
-        :return: List of full paths to image files.
+        Returns:
+            list[Path]: A list of Path objects for the image files found.
+
         """
         media_files = [
             Path(root) / file
@@ -55,9 +59,10 @@ class ImageManager:
     def is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
         """Check if a file is older than the specified time.
 
-        :param file_path: Full path to the file.
-        :param time_delta: timedelta object representing the age limit.
-        :return: True if the file is older than time_delta, False otherwise.
+        Args:
+            file_path (Path): Full path to the file.
+            time_delta (timedelta): Time duration to compare against.
+
         """
         try:
             file_mod_time = datetime.fromtimestamp(
@@ -78,8 +83,9 @@ class ImageManager:
     def remove_file(self, file_path: Path) -> bool:
         """Remove a specific file.
 
-        :param file_path: Full path to the file.
-        :return: True if removal was successful, False otherwise.
+        Args:
+            file_path (Path): Full path to the file.
+
         """
         try:
             file_path.unlink()
@@ -97,8 +103,10 @@ class ImageManager:
     ) -> None:
         """Record a summary of the removals carried out.
 
-        :param removed_count: Number of files successfully removed.
-        :param failed_removals: List of file paths that failed to be removed.
+        Args:
+            removed_count (int): Number of files successfully removed.
+            failed_removals (list[Path]): List of files that failed to be removed.
+
         """
         self.logger.info("Process completed. %d files removed.", removed_count)
         if failed_removals:
