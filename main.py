@@ -8,7 +8,7 @@ def main() -> None:
     """Set up logging and run the Instagram class."""
     setup_logging()
     ig = Instagram()
-    ig.run()
+    ig.run(remove_old_images=True)
 
 
 if __name__ == "__main__":
