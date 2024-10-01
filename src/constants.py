@@ -1,3 +1,5 @@
+"""Module containing constants and directory setup for the Instalker project."""
+
 import json
 from pathlib import Path
 

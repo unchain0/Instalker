@@ -1,3 +1,9 @@
+"""Module for managing Instagram profile downloads and session handling.
+
+It includes methods for downloading profiles, managing session cookies,
+and handling image and text file cleanup operations.
+"""
+
 import logging
 from glob import glob
 from os.path import expanduser
@@ -15,7 +21,14 @@ from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
+    """A class to manage Instagram profile downloads and session handling.
+
+    This class provides methods to download Instagram profiles, manage session cookies,
+    and handle image and text file cleanup operations.
+    """
+
     def __init__(self) -> None:
+        """Initialize the Instagram class with default settings and configurations."""
         self.download_directory = const.DOWNLOAD_DIRECTORY
         self.users = const.TARGET_USERS
         self.latest_stamps = self.__get_latest_stamps()
@@ -23,31 +36,29 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            sanitize_paths=True,
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
         self.image_manager = ImageManager(self.download_directory)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def run(self) -> None:
-        """
-        Executes the main sequence of operations for the class.
+    def run(self, *, remove_old_images: bool = False) -> None:
+        """Execute the main sequence of operations for the class.
 
         This method performs the following steps:
         1. Removes all text files.
-        2. Removes all images.
+        2. Removes old images (more than a week).
         3. Imports the session data.
         4. Initiates the download process.
         """
         self.remove_all_txt()
-        self.image_manager.remove_old_images()
+        if remove_old_images:
+            self.image_manager.remove_old_images()
         self.import_session()
         self.download()
 
     def download(self) -> None:
-        """
-        Downloads Instagram profiles and their content.
+        """Download Instagram profiles and their content.
 
         This method iterates over a list of users and downloads their profiles.
         It displays a progress bar to indicate the download progress. For each user,
@@ -80,15 +91,12 @@ class Instagram:
         self.logger.info("Download completed.")
 
     def remove_all_txt(self) -> None:
-        """
-        Removes all .txt files from the download directory.
-        """
+        """Remove all .txt files from the download directory."""
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
     def import_session(self) -> None:
-        """
-        Imports the session cookies from Firefox's cookies.sqlite file for Instagram.
+        """Import the session cookies from Firefox's cookies.sqlite file for Instagram.
 
         This method attempts to locate the Firefox cookies.sqlite file and extract
         cookies related to Instagram. It then updates the session cookies in the
@@ -124,8 +132,7 @@ class Instagram:
         self.loader.context.username = username
 
     def __get_instagram_profile(self, username: str) -> Profile | None:
-        """
-        Retrieves the Instagram profile of a given user.
+        """Retrieve the Instagram profile of a given user.
 
         Args:
             username (str): The username of the Instagram user.
@@ -138,13 +145,12 @@ class Instagram:
         try:
             profile: Profile = Profile.from_username(self.loader.context, username)
         except ProfileNotExistsException:
-            tqdm.write(f"Profile {username} not found.")
+            self.logger.info("Profile '%s' not found.", username)
             return None
         return profile
 
     def __get_latest_stamps(self) -> LatestStamps:
-        """
-        Retrieves the latest stamps for a given user.
+        """Retrieve the latest stamps for a given user.
 
         Returns:
             LatestStamps: An instance of the LatestStamps class.
@@ -155,8 +161,7 @@ class Instagram:
 
     @staticmethod
     def __get_cookiefile() -> str | None:
-        """
-        Retrieves the path to the Firefox cookies.sqlite file based on the system.
+        """Retrieve the path to the Firefox cookies.sqlite file based on the system.
 
         This method determines the default location of the Firefox cookies.sqlite file
         for Windows, macOS (Darwin), and other Unix-like systems. It then uses glob to

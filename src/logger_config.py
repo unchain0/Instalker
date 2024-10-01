@@ -1,11 +1,12 @@
+"""Sets up the logging configuration for the Instalker application."""
+
 import logging
 
 import src.constants as const
 
 
 def setup_logging(log_filename: str = "instalker.log") -> None:
-    """
-    Configures the logging system for the application.
+    """Configure the logging system for the application.
 
     :param log_directory: Directory where the log file will be saved.
     :param log_filename: Name of the log file.

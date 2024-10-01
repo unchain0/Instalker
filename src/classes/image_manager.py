@@ -1,3 +1,9 @@
+"""Provides the ImageManager class for managing image files in a directory.
+
+The ImageManager class allows for retrieval and removal of image files
+based on their age.
+"""
+
 import logging
 import os
 from datetime import UTC, datetime, timedelta
@@ -5,6 +11,8 @@ from pathlib import Path
 
 
 class ImageManager:
+    """Manages image files in a directory, retrieval and removal based on age."""
+
     SUPPORTED_EXTENSIONS = (
         ".jpg",
         ".jpeg",
@@ -23,19 +31,21 @@ class ImageManager:
     )
 
     def __init__(self, download_directory: Path) -> None:
-        """
-        Initializes the class with the download directory.
+        """Initialize the class with the download directory.
 
-        :param download_directory: Path to the directory where the images are stored.
+        Args:
+            download_directory (Path): The directory to manage image files in.
+
         """
         self.download_directory = download_directory
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def get_media_files(self) -> list[Path]:
-        """
-        Gets all the image files in the download directory and its subdirectories.
+        """Get all the image files in the download directory and its subdirectories.
 
-        :return: List of full paths to image files.
+        Returns:
+            list[Path]: A list of Path objects for the image files found.
+
         """
         media_files = [
             Path(root) / file
@@ -47,12 +57,12 @@ class ImageManager:
         return media_files
 
     def is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
-        """
-        Checks if a file is older than the specified time.
+        """Check if a file is older than the specified time.
 
-        :param file_path: Full path to the file.
-        :param time_delta: timedelta object representing the age limit.
-        :return: True if the file is older than time_delta, False otherwise.
+        Args:
+            file_path (Path): Full path to the file.
+            time_delta (timedelta): Time duration to compare against.
+
         """
         try:
             file_mod_time = datetime.fromtimestamp(
@@ -71,11 +81,11 @@ class ImageManager:
             return is_older
 
     def remove_file(self, file_path: Path) -> bool:
-        """
-        Removes a specific file.
+        """Remove a specific file.
 
-        :param file_path: Full path to the file.
-        :return: True if removal was successful, False otherwise.
+        Args:
+            file_path (Path): Full path to the file.
+
         """
         try:
             file_path.unlink()
@@ -91,11 +101,12 @@ class ImageManager:
         removed_count: int,
         failed_removals: list[Path],
     ) -> None:
-        """
-        Records a summary of the removals carried out.
+        """Record a summary of the removals carried out.
 
-        :param removed_count: Number of files successfully removed.
-        :param failed_removals: List of file paths that failed to be removed.
+        Args:
+            removed_count (int): Number of files successfully removed.
+            failed_removals (list[Path]): List of files that failed to be removed.
+
         """
         self.logger.info("Process completed. %d files removed.", removed_count)
         if failed_removals:
@@ -104,12 +115,11 @@ class ImageManager:
                 self.logger.warning(" - %s", failed_file)
 
     def remove_old_images(self, cutoff_delta: timedelta = timedelta(weeks=1)) -> None:
-        """
-        Removes media files in the download directory that are older than the specified duration.
+        """Remove media files in the that are older than the specified duration.
 
         Args:
             cutoff_delta (timedelta, optional): The age limit for removing files.
-                                                Default is one week (timedelta(weeks=1)).
+                Default is one week (timedelta(weeks=1)).
 
         """
         media_files = self.get_media_files()
