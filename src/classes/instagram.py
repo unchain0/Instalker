@@ -1,12 +1,7 @@
-"""The module provides methods to automate the download of Instagram profiles.
+"""Module for managing Instagram profile downloads and session handling.
 
-Classes:
-    InstagramProfile: Represents an Instagram profile with its most recent data.
-    Instagram: Manages the authentication and download of Instagram profiles.
-
-Functions:
-    get_cookiefile: Gets the path of the Firefox cookies.sqlite file.
-    import_session: Imports an Instagram session from Firefox cookies.
+It includes methods for downloading profiles, managing session cookies,
+and handling image and text file cleanup operations.
 """
 
 import logging
@@ -41,24 +36,24 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            sanitize_paths=True,
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
         self.image_manager = ImageManager(self.download_directory)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def run(self) -> None:
+    def run(self, *, remove_old_images: bool = False) -> None:
         """Execute the main sequence of operations for the class.
 
         This method performs the following steps:
         1. Removes all text files.
-        2. Removes all images.
+        2. Removes old images (more than a week).
         3. Imports the session data.
         4. Initiates the download process.
         """
         self.remove_all_txt()
-        self.image_manager.remove_old_images()
+        if remove_old_images:
+            self.image_manager.remove_old_images()
         self.import_session()
         self.download()
 
@@ -150,7 +145,7 @@ class Instagram:
         try:
             profile: Profile = Profile.from_username(self.loader.context, username)
         except ProfileNotExistsException:
-            tqdm.write(f"Profile {username} not found.")
+            self.logger.info("Profile '%s' not found.", username)
             return None
         return profile
 
