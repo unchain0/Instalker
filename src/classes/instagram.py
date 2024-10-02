@@ -107,9 +107,9 @@ class Instagram:
             logged in successfully in Firefox.
 
         """
-        cookie_file = self.__get_cookiefile()
+        cookie_file = self.__get_cookie_file()
         if not cookie_file:
-            msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
+            msg = "No Firefox cookies.sqlite file found."
             raise SystemExit(msg)
 
         self.logger.info("Using cookies from %s.", cookie_file)
@@ -160,7 +160,7 @@ class Instagram:
         return instaloader.LatestStamps(stamps_path)
 
     @staticmethod
-    def __get_cookiefile() -> str | None:
+    def __get_cookie_file() -> str | None:
         """Retrieve the path to the Firefox cookies.sqlite file based on the system.
 
         This method determines the default location of the Firefox cookies.sqlite file
@@ -174,12 +174,12 @@ class Instagram:
             SystemExit: If no cookies.sqlite file is found.
 
         """
-        default_cookiefile = {
+        default_cookie_file = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
             "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
-        cookie_files = glob(expanduser(default_cookiefile))
+        cookie_files = glob(expanduser(default_cookie_file))
         if not cookie_files:
-            msg = "No Firefox cookies.sqlite file found. Use -c COOKIEFILE."
+            msg = "No Firefox cookies.sqlite file found."
             raise SystemExit(msg)
         return cookie_files[0]
