@@ -1,7 +1,12 @@
-"""Module for managing Instagram profile downloads and session handling.
+"""The module provides methods to automate the download of Instagram profiles.
 
-It includes methods for downloading profiles, managing session cookies,
-and handling image and text file cleanup operations.
+Classes:
+    InstagramProfile: Represents an Instagram profile with its most recent data.
+    Instagram: Manages the authentication and download of Instagram profiles.
+
+Functions:
+    get_cookiefile: Gets the path of the Firefox cookies.sqlite file.
+    import_session: Imports an Instagram session from Firefox cookies.
 """
 
 import logging
@@ -16,7 +21,6 @@ from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
 import src.constants as const
-from src.classes.image_manager import ImageManager
 from src.classes.rate_controller import MyRateController
 
 
@@ -38,22 +42,20 @@ class Instagram:
             save_metadata=False,
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
+            max_connection_attempts=10,
+            request_timeout=300,
         )
-        self.image_manager = ImageManager(self.download_directory)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def run(self, *, remove_old_images: bool = False) -> None:
+    def run(self) -> None:
         """Execute the main sequence of operations for the class.
 
         This method performs the following steps:
         1. Removes all text files.
-        2. Removes old images (more than a week).
-        3. Imports the session data.
-        4. Initiates the download process.
+        2. Imports the session data.
+        3. Initiates the download process.
         """
         self.remove_all_txt()
-        if remove_old_images:
-            self.image_manager.remove_old_images()
         self.import_session()
         self.download()
 
@@ -128,7 +130,7 @@ class Instagram:
             msg = "Not logged in. Are you logged in successfully in Firefox?"
             raise SystemExit(msg)
 
-        self.logger.info("Imported session cookie for %s.", username)
+        self.logger.info("Imported session cookie for '%s'.", username)
         self.loader.context.username = username
 
     def __get_instagram_profile(self, username: str) -> Profile | None:
