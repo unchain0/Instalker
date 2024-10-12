@@ -1,7 +1,6 @@
 """Initialize logging and run the Instagram class."""
 
 import logging
-from pathlib import Path
 
 from src.classes.image_manager import ImageManager
 from src.classes.instagram import Instagram
@@ -23,8 +22,7 @@ def main() -> None:
     logger = logging.getLogger(__name__)
     logger.info("Starting the application")
 
-    download_directory = Path(__file__).parent / "downloads"
-    image_manager = ImageManager(download_directory)
+    image_manager = ImageManager()
     image_manager.remove_old_images()
 
     instagram = Instagram()
