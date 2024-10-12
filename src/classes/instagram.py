@@ -42,8 +42,6 @@ class Instagram:
             save_metadata=False,
             rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
-            max_connection_attempts=10,
-            request_timeout=300,
         )
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -78,9 +76,11 @@ class Instagram:
         for user in progress_bar:
             progress_bar.set_postfix({"user": user})
             profile = self.__get_instagram_profile(user)
+
             if profile is None:
                 continue
-            if profile.is_private:
+
+            if profile.is_private and not profile.followed_by_viewer:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
