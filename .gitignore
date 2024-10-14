@@ -3,6 +3,7 @@ downloads/
 latest_stamps.ini
 target_users.json
 logs/
+.idea/
 
 ### VisualStudioCode template
 .vscode/*
