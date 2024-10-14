@@ -27,7 +27,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["PTH111", "PTH207", "SLF001"]
+ignore = ["PTH111", "PTH207", "SLF001", "D104"]
 
 [build-system]
 requires = ["poetry-core"]
