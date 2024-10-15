@@ -9,6 +9,8 @@ import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from src.constants import DOWNLOAD_DIRECTORY
+
 
 class ImageManager:
     """Manages image files in a directory, retrieval and removal based on age."""
@@ -30,14 +32,14 @@ class ImageManager:
         ".mpg",
     )
 
-    def __init__(self, download_directory: Path) -> None:
+    def __init__(self) -> None:
         """Initialize the class with the download directory.
 
         Args:
             download_directory (Path): The directory to manage image files in.
 
         """
-        self.download_directory = download_directory
+        self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def get_media_files(self) -> list[Path]:
@@ -118,7 +120,7 @@ class ImageManager:
         """Remove media files in the that are older than the specified duration.
 
         Args:
-            cutoff_delta (timedelta, optional): The age limit for removing files.
+            cutoff_delta (timedelta): The age limit for removing files.
                 Default is one week (timedelta(weeks=1)).
 
         """
