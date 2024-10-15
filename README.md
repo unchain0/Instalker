@@ -6,7 +6,7 @@
 
 - **Downloads Automatizados**: Obtenha fotos e vídeos de perfis com apenas alguns passos.
 - **Configuração Personalizável**: Ajuste alvos conforme suas necessidades.
-- **Eficiência**: Usa cookies para uma performance mais ágil.
+- **Eficiência**: Usa cookies para um desempenho mais ágil.
 
 ## 🛠️ Requisitos
 
@@ -43,7 +43,3 @@
     ```bash
     python main.py
     ```
-
----
-
-Bom uso! 😎
