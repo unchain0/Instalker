@@ -120,7 +120,7 @@ class ImageManager:
         """Remove media files in the that are older than the specified duration.
 
         Args:
-            cutoff_delta (timedelta, optional): The age limit for removing files.
+            cutoff_delta (timedelta): The age limit for removing files.
                 Default is one week (timedelta(weeks=1)).
 
         """
