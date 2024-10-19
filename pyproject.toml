@@ -6,7 +6,7 @@ authors = ["Felippe Andrade <4drade@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 instaloader = "*"
 tqdm = "*"
 
@@ -17,13 +17,13 @@ mypy = "*"
 types-tqdm = "*"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
 untyped_calls_exclude = ["instaloader"]
 disable_error_code = ["assignment"]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["ALL"]
