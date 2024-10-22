@@ -1,4 +1,5 @@
-"""The module provides methods to automate the download of Instagram profiles.
+"""
+The module provides methods to automate the download of Instagram profiles.
 
 Classes:
     InstagramProfile: Represents an Instagram profile with its most recent data.
@@ -25,7 +26,8 @@ from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
-    """A class to manage Instagram profile downloads and session handling.
+    """
+    A class to manage Instagram profile downloads and session handling.
 
     This class provides methods to download Instagram profiles, manage session cookies,
     and handle image and text file cleanup operations.
@@ -46,7 +48,8 @@ class Instagram:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def run(self) -> None:
-        """Execute the main sequence of operations for the class.
+        """
+        Execute the main sequence of operations for the class.
 
         This method performs the following steps:
         1. Removes all text files.
@@ -58,7 +61,8 @@ class Instagram:
         self.download()
 
     def download(self) -> None:
-        """Download Instagram profiles and their content.
+        """
+        Download Instagram profiles and their content.
 
         This method iterates over a list of users and downloads their profiles.
         It displays a progress bar to indicate the download progress. For each user,
@@ -98,7 +102,8 @@ class Instagram:
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
     def import_session(self) -> None:
-        """Import the session cookies from Firefox's cookies.sqlite file for Instagram.
+        """
+        Import the session cookies from Firefox's cookies.sqlite file for Instagram.
 
         This method attempts to locate the Firefox cookies.sqlite file and extract
         cookies related to Instagram. It then updates the session cookies in the
@@ -134,7 +139,8 @@ class Instagram:
         self.loader.context.username = username
 
     def __get_instagram_profile(self, username: str) -> Profile | None:
-        """Retrieve the Instagram profile of a given user.
+        """
+        Retrieve the Instagram profile of a given user.
 
         Args:
             username (str): The username of the Instagram user.
@@ -152,7 +158,8 @@ class Instagram:
         return profile
 
     def __get_latest_stamps(self) -> LatestStamps:
-        """Retrieve the latest stamps for a given user.
+        """
+        Retrieve the latest stamps for a given user.
 
         Returns:
             LatestStamps: An instance of the LatestStamps class.
@@ -163,7 +170,8 @@ class Instagram:
 
     @staticmethod
     def __get_cookie_file() -> str | None:
-        """Retrieve the path to the Firefox cookies.sqlite file based on the system.
+        """
+        Retrieve the path to the Firefox cookies.sqlite file based on the system.
 
         This method determines the default location of the Firefox cookies.sqlite file
         for Windows, macOS (Darwin), and other Unix-like systems. It then uses glob to

@@ -1,4 +1,5 @@
-"""Module containing a custom RateController.
+"""
+Module containing a custom RateController.
 
 The custom RateController adds a random delay to the sleep time.
 """
