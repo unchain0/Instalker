@@ -1,4 +1,5 @@
-"""Provides the ImageManager class for managing image files in a directory.
+"""
+Provides the ImageManager class for managing image files in a directory.
 
 The ImageManager class allows for retrieval and removal of image files
 based on their age.
@@ -33,7 +34,8 @@ class ImageManager:
     )
 
     def __init__(self) -> None:
-        """Initialize the class with the download directory.
+        """
+        Initialize the class with the download directory.
 
         Args:
             download_directory (Path): The directory to manage image files in.
@@ -43,7 +45,8 @@ class ImageManager:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def get_media_files(self) -> list[Path]:
-        """Get all the image files in the download directory and its subdirectories.
+        """
+        Get all the image files in the download directory and its subdirectories.
 
         Returns:
             list[Path]: A list of Path objects for the image files found.
@@ -59,7 +62,8 @@ class ImageManager:
         return media_files
 
     def is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
-        """Check if a file is older than the specified time.
+        """
+        Check if a file is older than the specified time.
 
         Args:
             file_path (Path): Full path to the file.
@@ -83,7 +87,8 @@ class ImageManager:
             return is_older
 
     def remove_file(self, file_path: Path) -> bool:
-        """Remove a specific file.
+        """
+        Remove a specific file.
 
         Args:
             file_path (Path): Full path to the file.
@@ -103,7 +108,8 @@ class ImageManager:
         removed_count: int,
         failed_removals: list[Path],
     ) -> None:
-        """Record a summary of the removals carried out.
+        """
+        Record a summary of the removals carried out.
 
         Args:
             removed_count (int): Number of files successfully removed.
@@ -117,7 +123,8 @@ class ImageManager:
                 self.logger.warning(" - %s", failed_file)
 
     def remove_old_images(self, cutoff_delta: timedelta = timedelta(weeks=1)) -> None:
-        """Remove media files in the that are older than the specified duration.
+        """
+        Remove media files in the that are older than the specified duration.
 
         Args:
             cutoff_delta (timedelta): The age limit for removing files.

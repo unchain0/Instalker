@@ -7,7 +7,8 @@ import src.constants as const
 
 
 def setup_logging() -> None:
-    """Configure the logging system for the application.
+    """
+    Configure the logging system for the application.
 
     :param log_directory: Directory where the log file will be saved.
     :param log_filename: Name of the log file.
