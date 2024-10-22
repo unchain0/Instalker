@@ -28,7 +28,7 @@ target-version = "py313"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["PTH111", "PTH207", "SLF001", "D104"]
+ignore = ["PTH111", "PTH207", "SLF001", "D104", "D203", "D212"]
 
 [build-system]
 requires = ["poetry-core"]
