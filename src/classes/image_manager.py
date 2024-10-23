@@ -44,7 +44,29 @@ class ImageManager:
         self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def get_media_files(self) -> list[Path]:
+    def remove_old_images(self, cutoff_delta: timedelta = timedelta(weeks=1)) -> None:
+        """
+        Remove media files in the that are older than the specified duration.
+
+        Args:
+            cutoff_delta (timedelta): The age limit for removing files.
+                Default is one week (timedelta(weeks=1)).
+
+        """
+        media_files = self.__get_media_files()
+        removed_count = 0
+        failed_removals = []
+
+        for file_path in media_files:
+            if self.__is_file_older_than(file_path, cutoff_delta):
+                if self.__remove_file(file_path):
+                    removed_count += 1
+                else:
+                    failed_removals.append(file_path)
+
+        self.__log_removal_summary(removed_count, failed_removals)
+
+    def __get_media_files(self) -> list[Path]:
         """
         Get all the image files in the download directory and its subdirectories.
 
@@ -61,7 +83,7 @@ class ImageManager:
         self.logger.debug("Found %d media files.", len(media_files))
         return media_files
 
-    def is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
+    def __is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
         """
         Check if a file is older than the specified time.
 
@@ -86,7 +108,7 @@ class ImageManager:
         else:
             return is_older
 
-    def remove_file(self, file_path: Path) -> bool:
+    def __remove_file(self, file_path: Path) -> bool:
         """
         Remove a specific file.
 
@@ -103,7 +125,7 @@ class ImageManager:
         else:
             return True
 
-    def log_removal_summary(
+    def __log_removal_summary(
         self,
         removed_count: int,
         failed_removals: list[Path],
@@ -121,25 +143,3 @@ class ImageManager:
             self.logger.warning("Failed to remove %d files:", len(failed_removals))
             for failed_file in failed_removals:
                 self.logger.warning(" - %s", failed_file)
-
-    def remove_old_images(self, cutoff_delta: timedelta = timedelta(weeks=1)) -> None:
-        """
-        Remove media files in the that are older than the specified duration.
-
-        Args:
-            cutoff_delta (timedelta): The age limit for removing files.
-                Default is one week (timedelta(weeks=1)).
-
-        """
-        media_files = self.get_media_files()
-        removed_count = 0
-        failed_removals = []
-
-        for file_path in media_files:
-            if self.is_file_older_than(file_path, cutoff_delta):
-                if self.remove_file(file_path):
-                    removed_count += 1
-                else:
-                    failed_removals.append(file_path)
-
-        self.log_removal_summary(removed_count, failed_removals)
