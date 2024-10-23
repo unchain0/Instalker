@@ -56,11 +56,11 @@ class Instagram:
         2. Imports the session data.
         3. Initiates the download process.
         """
-        self.remove_all_txt()
-        self.import_session()
-        self.download()
+        self.__remove_all_txt()
+        self.__import_session()
+        self.__download()
 
-    def download(self) -> None:
+    def __download(self) -> None:
         """
         Download Instagram profiles and their content.
 
@@ -96,12 +96,12 @@ class Instagram:
             )
         self.logger.info("Download completed.")
 
-    def remove_all_txt(self) -> None:
+    def __remove_all_txt(self) -> None:
         """Remove all .txt files from the download directory."""
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
-    def import_session(self) -> None:
+    def __import_session(self) -> None:
         """
         Import the session cookies from Firefox's cookies.sqlite file for Instagram.
 
