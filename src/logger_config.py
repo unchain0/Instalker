@@ -1,9 +1,6 @@
 """Sets up the logging configuration for the Instalker application."""
 
 import logging
-from datetime import UTC, datetime
-
-import src.constants as const
 
 
 def setup_logging() -> None:
@@ -16,13 +13,11 @@ def setup_logging() -> None:
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
-    log_filename = datetime.now(tz=UTC).strftime("%Y-%m-%d_%H-%M-%S.log")
-
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(const.LOG_DIRECTORY / log_filename),
+            logging.FileHandler("instalker.log"),
             logging.StreamHandler(),
         ],
     )
