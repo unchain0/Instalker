@@ -23,7 +23,6 @@ from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
 import src.constants as const
-from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
@@ -43,7 +42,6 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -94,6 +92,7 @@ class Instagram:
                     {profile},
                     tagged=True,
                     igtv=True,
+                    highlights=True,
                     stories=True,
                     latest_stamps=self.latest_stamps,
                 )
