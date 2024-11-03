@@ -5,9 +5,6 @@ from pathlib import Path
 
 ROOT_DIRECTORY = Path(__file__).parent.parent
 
-LOG_DIRECTORY = ROOT_DIRECTORY / "logs"
-LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
-
 DOWNLOAD_DIRECTORY = ROOT_DIRECTORY / "downloads"
 DOWNLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 

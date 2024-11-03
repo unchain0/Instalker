@@ -10,6 +10,7 @@ Functions:
     import_session: Imports an Instagram session from Firefox cookies.
 """
 
+import contextlib
 import logging
 from glob import glob
 from os.path import expanduser
@@ -22,7 +23,6 @@ from instaloader import LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
 import src.constants as const
-from src.classes.rate_controller import MyRateController
 
 
 class Instagram:
@@ -42,7 +42,6 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            rate_controller=lambda ctx: MyRateController(ctx),
             fatal_status_codes=[429],
         )
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -88,12 +87,15 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            self.loader.download_profiles(
-                {profile},
-                tagged=True,
-                stories=True,
-                latest_stamps=self.latest_stamps,
-            )
+            with contextlib.suppress(KeyError):
+                self.loader.download_profiles(
+                    {profile},
+                    tagged=True,
+                    igtv=True,
+                    highlights=True,
+                    stories=True,
+                    latest_stamps=self.latest_stamps,
+                )
         self.logger.info("Download completed.")
 
     def __remove_all_txt(self) -> None:
@@ -147,7 +149,7 @@ class Instagram:
 
         Returns:
             Profile | None: The Instagram profile of the user,
-            or None if the profile does not exist.
+            or None if the profile doesn't exist.
 
         """
         try:
