@@ -17,6 +17,7 @@ ruff = "^0.7.2"
 mypy = "^1.13.0"
 ruff-lsp = "^0.0.58"
 types-tqdm = "^4.64.7"
+pre-commit = "^4.0.1"
 
 [build-system]
 requires = ["poetry-core"]
