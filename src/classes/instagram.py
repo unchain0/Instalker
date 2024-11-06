@@ -10,7 +10,6 @@ Functions:
     import_session: Imports an Instagram session from Firefox cookies.
 """
 
-import contextlib
 import logging
 from glob import glob
 from os.path import expanduser
@@ -33,10 +32,27 @@ class Instagram:
     and handle image and text file cleanup operations.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, users: set[str] = set) -> None:
+        """
+        Initialize the Instagram class with default settings and configurations.
+
+        Args:
+            users (set[str], optional): A set of usernames to track.
+                Defaults to an empty set.
+
+        Attributes:
+            download_directory (str): The directory where downloads will be stored.
+            users (set[str]): The set of usernames to track.
+            latest_stamps (dict): A dictionary containing the latest timestamps
+                for tracked users.
+            loader (instaloader.Instaloader): An instance of the Instaloader class
+                for downloading Instagram data.
+            logger (logging.Logger): A logger instance for logging class activities.
+
+        """
         """Initialize the Instagram class with default settings and configurations."""
         self.download_directory = const.DOWNLOAD_DIRECTORY
-        self.users = const.TARGET_USERS
+        self.users = users or const.TARGET_USERS
         self.latest_stamps = self.__get_latest_stamps()
         self.loader = instaloader.Instaloader(
             dirname_pattern=str(self.download_directory),
@@ -87,15 +103,12 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            with contextlib.suppress(KeyError):
-                self.loader.download_profiles(
-                    {profile},
-                    tagged=True,
-                    igtv=True,
-                    highlights=True,
-                    stories=True,
-                    latest_stamps=self.latest_stamps,
-                )
+            self.loader.download_profiles(
+                {profile},
+                tagged=True,
+                stories=True,
+                latest_stamps=self.latest_stamps,
+            )
         self.logger.info("Download completed.")
 
     def __remove_all_txt(self) -> None:
