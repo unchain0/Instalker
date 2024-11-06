@@ -8,28 +8,34 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.13"
-instaloader = "*"
-tqdm = "*"
+instaloader = "4.13.2"
+tqdm = "4.66.6"
 
 [tool.poetry.group.dev.dependencies]
-ruff-lsp = "*"
-ruff = "*"
-mypy = "*"
-types-tqdm = "*"
-
-[tool.mypy]
-python_version = "3.13"
-strict = true
-untyped_calls_exclude = ["instaloader"]
-disable_error_code = ["assignment"]
-
-[tool.ruff]
-target-version = "py313"
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["PTH111", "PTH207", "SLF001", "D104", "D203", "D212"]
+pytest = "^8.3.3"
+ruff = "^0.7.2"
+mypy = "^1.13.0"
+ruff-lsp = "^0.0.58"
+types-tqdm = "^4.64.7"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.13"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+strict_optional = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+select = ["E", "F", "I", "N", "W", "B", "COM", "C4", "UP", "ANN", "RUF"]
