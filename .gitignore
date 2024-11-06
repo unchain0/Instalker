@@ -2,6 +2,7 @@
 downloads/
 latest_stamps.ini
 users.json
+cookie_path
 *.log
 
 ### VisualStudioCode template
