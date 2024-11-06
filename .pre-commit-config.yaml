@@ -4,9 +4,36 @@ repos:
     hooks:
     -   id: ruff
         args: [--fix]
+        options:
+            target-version: py313
+            line-length: 88
+            select: 
+                - E   # pycodestyle
+                - F   # pyflakes
+                - I   # isort
+                - N   # naming
+                - W   # warnings
+                - B   # bugbear
+                - COM # commas
+                - C4  # comprehensions
+                - UP  # upgrade
+                - ANN # annotations
+                - RUF # ruff-specific
     -   id: ruff-format
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
     hooks:
     -   id: mypy
         additional_dependencies: [types-tqdm]
+        args:
+            - --python-version=3.13
+            - --disallow-untyped-defs
+            - --disallow-incomplete-defs
+            - --check-untyped-defs
+            - --disallow-untyped-decorators
+            - --no-implicit-optional
+            - --warn-redundant-casts
+            - --warn-unused-ignores
+            - --warn-return-any
+            - --warn-unreachable
+            - --strict-optional
