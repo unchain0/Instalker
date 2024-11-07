@@ -1,11 +1,17 @@
 from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from instaloader import Profile, ProfileNotExistsException
 
 from src.core.instagram import Instagram
+
+
+@pytest.fixture(autouse=True)
+def mock_users_json() -> Generator[None, None, None]:
+    with patch("src.config.settings.Path.open", mock_open(read_data='["test_user"]')):
+        yield
 
 
 @pytest.fixture
