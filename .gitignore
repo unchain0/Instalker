@@ -1,9 +1,8 @@
 ### Project template
 downloads/
 latest_stamps.ini
-target_users.json
+users.json
 *.log
-.idea/
 
 ### VisualStudioCode template
 .vscode/*
