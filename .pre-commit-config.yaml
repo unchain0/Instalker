@@ -34,10 +34,4 @@ repos:
     rev: v0.14.0
     hooks:
     -   id: markdownlint-cli2
-        exclude: |
-            (^\.venv/)|
-            (^venv/)|
-            (^env/)|
-            (^\.env/)
-        args:
-            - '**/*.md'
+        files: \.md$
