@@ -2,7 +2,7 @@
 name = "Instalker"
 version = "0.1.0"
 description = "Download profiles on Instagram"
-authors = ["Felippe Andrade <4drade@gmail.com>"]
+authors = ["Felippe A. <4drade@gmail.com>"]
 readme = "README.md"
 package-mode = false
 
