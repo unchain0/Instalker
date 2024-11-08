@@ -1,3 +1,4 @@
+import contextlib
 import logging
 from glob import glob
 from os.path import expanduser
@@ -91,13 +92,16 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            self.loader.download_profiles(
-                {profile},
-                tagged=True,
-                stories=True,
-                reels=True,
-                latest_stamps=self.latest_stamps,
-            )
+            with contextlib.suppress(KeyError):
+                self.loader.download_profiles(
+                    {profile},
+                    tagged=True,
+                    igtv=True,
+                    stories=True,
+                    reels=True,
+                    latest_stamps=self.latest_stamps,
+                )
+
         self.logger.info("Download completed.")
 
     def remove_all_txt(self: "Instagram") -> None:

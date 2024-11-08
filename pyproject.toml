@@ -2,7 +2,7 @@
 name = "Instalker"
 version = "0.1.0"
 description = "Download profiles on Instagram"
-authors = ["Felippe Andrade <4drade@gmail.com>"]
+authors = ["Felippe A. <4drade@gmail.com>"]
 readme = "README.md"
 package-mode = false
 
@@ -13,7 +13,7 @@ tqdm = "4.67.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
-ruff = "^0.7.2"
+ruff = "^0.7.3"
 mypy = "^1.13.0"
 ruff-lsp = "^0.0.58"
 types-tqdm = "^4.64.7"
