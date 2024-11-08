@@ -6,18 +6,6 @@ repos:
         args: [--fix]
         types: [python]
         exclude: ^tests/
-        select: 
-            - E   # pycodestyle
-            - F   # pyflakes
-            - I   # isort
-            - N   # naming
-            - W   # warnings
-            - B   # bugbear
-            - COM # commas
-            - C4  # comprehensions
-            - UP  # upgrade
-            - ANN # annotations
-            - RUF # ruff-specific
         additional_dependencies:
           - types-tqdm
           - instaloader
