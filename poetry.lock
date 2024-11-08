@@ -258,16 +258,16 @@ files = [
 
 [[package]]
 name = "instaloader"
-version = "4.13.2"
+version = "4.14"
 description = "Download pictures (or videos) along with their captions and other metadata from Instagram."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "instaloader-4.13.2.tar.gz", hash = "sha256:a205d79ef11a4485110fd4d060a4708d73eb89993dc2933757c2eafbc5edad2d"},
+    {file = "instaloader-4.14.tar.gz", hash = "sha256:754425eb17af44ce4bb6056e4eacd044a518d13b5efc11b9d80eb229bb96c652"},
 ]
 
 [package.dependencies]
-requests = ">=2.4"
+requests = ">=2.25"
 
 [package.extras]
 browser-cookie3 = ["browser_cookie3 (>=0.19.1)"]
@@ -592,13 +592,13 @@ dev = ["mypy (==1.4.1)", "pip-tools (>=6.13.0,<7.0.0)", "pytest (>=7.3.1,<8.0.0)
 
 [[package]]
 name = "tqdm"
-version = "4.66.6"
+version = "4.67.0"
 description = "Fast, Extensible Progress Meter"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tqdm-4.66.6-py3-none-any.whl", hash = "sha256:223e8b5359c2efc4b30555531f09e9f2f3589bcd7fdd389271191031b49b7a63"},
-    {file = "tqdm-4.66.6.tar.gz", hash = "sha256:4bdd694238bef1485ce839d67967ab50af8f9272aab687c0d7702a01da0be090"},
+    {file = "tqdm-4.67.0-py3-none-any.whl", hash = "sha256:0cd8af9d56911acab92182e88d763100d4788bdf421d251616040cc4d44863be"},
+    {file = "tqdm-4.67.0.tar.gz", hash = "sha256:fe5a6f95e6fe0b9755e9469b77b9c3cf850048224ecaa8293d7d2d31f97d869a"},
 ]
 
 [package.dependencies]
@@ -606,6 +606,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [package.extras]
 dev = ["pytest (>=6)", "pytest-cov", "pytest-timeout", "pytest-xdist"]
+discord = ["requests"]
 notebook = ["ipywidgets (>=6)"]
 slack = ["slack-sdk"]
 telegram = ["requests"]
@@ -672,4 +673,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "8c16ae34c72c9859f2d44a1f544c874139526ab317c777091bf5b01cdfa38211"
+content-hash = "5287464cc914557efb436a5ceae28b0f939bc136e23f61a84207078f61adfdff"
