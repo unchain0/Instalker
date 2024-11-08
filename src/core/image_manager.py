@@ -26,7 +26,7 @@ class ImageManager:
         ".mpg",
     )
 
-    def __init__(self) -> None:
+    def __init__(self: "ImageManager") -> None:
         """
         Initialize the class with the download directory.
 
@@ -37,7 +37,10 @@ class ImageManager:
         self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def remove_old_images(self, cutoff_delta: timedelta = timedelta(weeks=1)) -> None:
+    def remove_old_images(
+        self: "ImageManager",
+        cutoff_delta: timedelta = timedelta(weeks=1),
+    ) -> None:
         """
         Remove media files in the that are older than the specified duration.
 
@@ -59,7 +62,7 @@ class ImageManager:
 
         self.__log_removal_summary(removed_count, failed_removals)
 
-    def __get_media_files(self) -> list[Path]:
+    def __get_media_files(self: "ImageManager") -> list[Path]:
         """
         Get all the image files in the download directory and its subdirectories.
 
@@ -76,7 +79,11 @@ class ImageManager:
         self.logger.debug("Found %d media files.", len(media_files))
         return media_files
 
-    def __is_file_older_than(self, file_path: Path, time_delta: timedelta) -> bool:
+    def __is_file_older_than(
+        self: "ImageManager",
+        file_path: Path,
+        time_delta: timedelta,
+    ) -> bool:
         """
         Check if a file is older than the specified time.
 
@@ -101,7 +108,7 @@ class ImageManager:
         else:
             return is_older
 
-    def __remove_file(self, file_path: Path) -> bool:
+    def __remove_file(self: "ImageManager", file_path: Path) -> bool:
         """
         Remove a specific file.
 
@@ -119,7 +126,7 @@ class ImageManager:
             return True
 
     def __log_removal_summary(
-        self,
+        self: "ImageManager",
         removed_count: int,
         failed_removals: list[Path],
     ) -> None:
