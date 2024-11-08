@@ -1,15 +1,3 @@
-"""
-The module provides methods to automate the download of Instagram profiles.
-
-Classes:
-    InstagramProfile: Represents an Instagram profile with its most recent data.
-    Instagram: Manages the authentication and download of Instagram profiles.
-
-Functions:
-    get_cookiefile: Gets the path of the Firefox cookies.sqlite file.
-    import_session: Imports an Instagram session from Firefox cookies.
-"""
-
 import logging
 from glob import glob
 from os.path import expanduser
@@ -18,10 +6,10 @@ from shutil import rmtree
 from sqlite3 import OperationalError, connect
 
 import instaloader
-from instaloader import LatestStamps, Profile, ProfileNotExistsException
+from instaloader import Profile, ProfileNotExistsException
 from tqdm import tqdm
 
-import src.constants as const
+from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
 
 
 class Instagram:
@@ -32,7 +20,7 @@ class Instagram:
     and handle image and text file cleanup operations.
     """
 
-    def __init__(self, users: set[str] = set) -> None:
+    def __init__(self: "Instagram", users: set[str] | None) -> None:
         """
         Initialize the Instagram class with default settings and configurations.
 
@@ -51,9 +39,9 @@ class Instagram:
 
         """
         """Initialize the Instagram class with default settings and configurations."""
-        self.download_directory = const.DOWNLOAD_DIRECTORY
-        self.users = users or const.TARGET_USERS
-        self.latest_stamps = self.__get_latest_stamps()
+        self.download_directory = DOWNLOAD_DIRECTORY
+        self.users = users if users is not None else TARGET_USERS
+        self.latest_stamps = instaloader.LatestStamps(LATEST_STAMPS)
         self.loader = instaloader.Instaloader(
             dirname_pattern=str(self.download_directory),
             quiet=True,
@@ -62,7 +50,7 @@ class Instagram:
         )
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def run(self) -> None:
+    def run(self: "Instagram") -> None:
         """
         Execute the main sequence of operations for the class.
 
@@ -71,11 +59,11 @@ class Instagram:
         2. Imports the session data.
         3. Initiates the download process.
         """
-        self.__remove_all_txt()
-        self.__import_session()
-        self.__download()
+        self.remove_all_txt()
+        self.import_session()
+        self.download()
 
-    def __download(self) -> None:
+    def download(self: "Instagram") -> None:
         """
         Download Instagram profiles and their content.
 
@@ -94,7 +82,7 @@ class Instagram:
         )
         for user in progress_bar:
             progress_bar.set_postfix({"user": user})
-            profile = self.__get_instagram_profile(user)
+            profile = self.get_instagram_profile(user)
 
             if profile is None:
                 continue
@@ -107,16 +95,17 @@ class Instagram:
                 {profile},
                 tagged=True,
                 stories=True,
+                reels=True,
                 latest_stamps=self.latest_stamps,
             )
         self.logger.info("Download completed.")
 
-    def __remove_all_txt(self) -> None:
+    def remove_all_txt(self: "Instagram") -> None:
         """Remove all .txt files from the download directory."""
         for txt in self.download_directory.glob("*.txt"):
             rmtree(txt) if txt.is_dir() else txt.unlink()
 
-    def __import_session(self) -> None:
+    def import_session(self: "Instagram") -> None:
         """
         Import the session cookies from Firefox's cookies.sqlite file for Instagram.
 
@@ -129,7 +118,7 @@ class Instagram:
             logged in successfully in Firefox.
 
         """
-        cookie_file = self.__get_cookie_file()
+        cookie_file = self.get_cookie_file()
         if not cookie_file:
             msg = "No Firefox cookies.sqlite file found."
             raise SystemExit(msg)
@@ -151,9 +140,9 @@ class Instagram:
             raise SystemExit(msg)
 
         self.logger.info("Imported session cookie for '%s'.", username)
-        self.loader.context.username = username
+        self.loader.context.username = username  # type: ignore[assignment]
 
-    def __get_instagram_profile(self, username: str) -> Profile | None:
+    def get_instagram_profile(self: "Instagram", username: str) -> Profile | None:
         """
         Retrieve the Instagram profile of a given user.
 
@@ -172,19 +161,8 @@ class Instagram:
             return None
         return profile
 
-    def __get_latest_stamps(self) -> LatestStamps:
-        """
-        Retrieve the latest stamps for a given user.
-
-        Returns:
-            LatestStamps: An instance of the LatestStamps class.
-
-        """
-        stamps_path = const.ROOT_DIRECTORY / "latest_stamps.ini"
-        return instaloader.LatestStamps(stamps_path)
-
     @staticmethod
-    def __get_cookie_file() -> str | None:
+    def get_cookie_file() -> str | None:
         """
         Retrieve the path to the Firefox cookies.sqlite file based on the system.
 

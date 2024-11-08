@@ -1,16 +1,9 @@
-"""
-Provides the ImageManager class for managing image files in a directory.
-
-The ImageManager class allows for retrieval and removal of image files
-based on their age.
-"""
-
 import logging
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from src.constants import DOWNLOAD_DIRECTORY
+from src.config.settings import DOWNLOAD_DIRECTORY
 
 
 class ImageManager:

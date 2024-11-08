@@ -1,10 +1,8 @@
-"""Initialize logging and run the Instagram class."""
-
 import logging
 
-from src.classes.image_manager import ImageManager
-from src.classes.instagram import Instagram
-from src.logger_config import setup_logging
+from src.core.image_manager import ImageManager
+from src.core.instagram import Instagram
+from src.utils.logger import setup_logging
 
 
 def main() -> None:
@@ -25,7 +23,7 @@ def main() -> None:
     image_manager = ImageManager()
     image_manager.remove_old_images()
 
-    instagram = Instagram()
+    instagram = Instagram(None)
     instagram.run()
 
 

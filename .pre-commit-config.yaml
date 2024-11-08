@@ -1,0 +1,32 @@
+repos:
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.2
+    hooks:
+    -   id: ruff
+        args: [--fix]
+        types: [python]
+        exclude: ^tests/
+        additional_dependencies:
+          - types-tqdm
+          - instaloader
+    -   id: ruff-format
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+    -   id: mypy
+        additional_dependencies:
+            - types-tqdm
+            - instaloader
+        args:
+            - --python-version=3.13
+            - --disallow-untyped-defs
+            - --disallow-incomplete-defs
+            - --check-untyped-defs
+            - --disallow-untyped-decorators
+            - --no-implicit-optional
+            - --warn-redundant-casts
+            - --warn-unused-ignores
+            - --warn-return-any
+            - --warn-unreachable
+            - --strict-optional
+            - --ignore-missing-imports
