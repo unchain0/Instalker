@@ -95,6 +95,7 @@ class Instagram:
                 {profile},
                 tagged=True,
                 stories=True,
+                reels=True,
                 latest_stamps=self.latest_stamps,
             )
         self.logger.info("Download completed.")
