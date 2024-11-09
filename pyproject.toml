@@ -39,4 +39,3 @@ strict_optional = true
 [tool.ruff]
 target-version = "py313"
 line-length = 88
-select = ["E", "F", "I", "N", "W", "B", "COM", "C4", "UP", "ANN", "RUF"]
