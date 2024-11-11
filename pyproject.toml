@@ -24,7 +24,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.12"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
@@ -37,5 +37,5 @@ warn_unreachable = true
 strict_optional = true
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py312"
 line-length = 88
