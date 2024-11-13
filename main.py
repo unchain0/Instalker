@@ -1,4 +1,5 @@
 import logging
+import os
 
 from src.core.image_manager import ImageManager
 from src.core.instagram import Instagram
@@ -18,12 +19,23 @@ def main() -> None:
     """
     setup_logging()
     logger = logging.getLogger(__name__)
-    logger.info("Starting the application")
+    os.system("cls")
 
     image_manager = ImageManager()
-    image_manager.remove_old_images()
 
-    instagram = Instagram(None)
+    if input("Do you want to remove small images? (y/n): ").lower() == "y":
+        image_manager.remove_small_images(min_size=(256, 256))
+
+    if input("Do you want to remove old images? (y/n): ").lower() == "y":
+        image_manager.remove_old_images()
+
+    if input("Do you want to add users manually? (y/n): ").lower() == "y":
+        users = input("Enter the usernames separated by a space: ").split()
+        instagram = Instagram(set(users))
+    else:
+        instagram = Instagram(None)
+
+    logger.info("Starting the application")
     instagram.run()
 
 
