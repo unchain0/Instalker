@@ -3,8 +3,10 @@ import logging
 from glob import glob
 from os.path import expanduser
 from platform import system
+from random import randint
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
+from time import sleep
 
 import instaloader
 from instaloader import Profile, ProfileNotExistsException
@@ -47,7 +49,7 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            fatal_status_codes=[429],
+            fatal_status_codes=[400, 401, 429],
         )
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -91,6 +93,8 @@ class Instagram:
             if profile.is_private and not profile.followed_by_viewer:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
+
+            sleep(randint(5, 13))
 
             with contextlib.suppress(KeyError):
                 self.loader.download_profiles(
