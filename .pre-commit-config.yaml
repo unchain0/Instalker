@@ -18,7 +18,6 @@ repos:
             - types-tqdm
             - instaloader
         args:
-            - --python-version=3.13
             - --disallow-untyped-defs
             - --disallow-incomplete-defs
             - --check-untyped-defs

@@ -7,9 +7,11 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.12"
 instaloader = "4.14.0"
 tqdm = "4.67.0"
+pillow = "^11.0.0"
+send2trash = "^1.8.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
@@ -18,13 +20,15 @@ mypy = "^1.13.0"
 ruff-lsp = "^0.0.58"
 types-tqdm = "^4.64.7"
 pre-commit = "^4.0.1"
+types-pillow = "^10.2.0.20240822"
+types-send2trash = "^1.8.2.7"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.12"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
@@ -37,6 +41,5 @@ warn_unreachable = true
 strict_optional = true
 
 [tool.ruff]
-target-version = "py313"
+target-version = "py312"
 line-length = 88
-select = ["E", "F", "I", "N", "W", "B", "COM", "C4", "UP", "ANN", "RUF"]
