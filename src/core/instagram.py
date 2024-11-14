@@ -128,8 +128,7 @@ class Instagram:
         """
         cookie_file = self.get_cookie_file()
         if not cookie_file:
-            msg = "No Firefox cookies.sqlite file found."
-            raise SystemExit(msg)
+            raise SystemExit("No Firefox cookies.sqlite file found.")
 
         self.logger.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
@@ -144,8 +143,9 @@ class Instagram:
         self.loader.context._session.cookies.update(cookie_data)
         username = self.loader.test_login()
         if not username:
-            msg = "Not logged in. Are you logged in successfully in Firefox?"
-            raise SystemExit(msg)
+            raise SystemExit(
+                "Not logged in. Are you logged in successfully in Firefox?"
+            )
 
         self.logger.info("Imported session cookie for '%s'.", username)
         self.loader.context.username = username  # type: ignore[assignment]
@@ -191,6 +191,5 @@ class Instagram:
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
         cookie_files = glob(expanduser(default_cookie_file))
         if not cookie_files:
-            msg = "No Firefox cookies.sqlite file found."
-            raise SystemExit(msg)
+            raise SystemExit("No Firefox cookies.sqlite file found.")
         return cookie_files[0]
