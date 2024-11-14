@@ -87,14 +87,14 @@ class Instagram:
             progress_bar.set_postfix({"user": user})
             profile = self.get_instagram_profile(user)
 
+            sleep(randint(5, 13))
+
             if profile is None:
                 continue
 
             if profile.is_private and not profile.followed_by_viewer:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
-
-            sleep(randint(5, 13))
 
             with contextlib.suppress(KeyError):
                 self.loader.download_profiles(
