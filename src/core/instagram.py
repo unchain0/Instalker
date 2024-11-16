@@ -39,9 +39,7 @@ class Instagram:
             loader (instaloader.Instaloader): An instance of the Instaloader class
                 for downloading Instagram data.
             logger (logging.Logger): A logger instance for logging class activities.
-
         """
-        """Initialize the Instagram class with default settings and configurations."""
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
         self.latest_stamps = instaloader.LatestStamps(LATEST_STAMPS)
@@ -87,9 +85,8 @@ class Instagram:
             progress_bar.set_postfix({"user": user})
             profile = self.get_instagram_profile(user)
 
-            sleep(randint(5, 13))
-
             if profile is None:
+                sleep(randint(3, 7))
                 continue
 
             if profile.is_private and not profile.followed_by_viewer:
@@ -124,7 +121,6 @@ class Instagram:
         Raises:
             SystemExit: If the cookies.sqlite file is not found or if the user is not
             logged in successfully in Firefox.
-
         """
         cookie_file = self.get_cookie_file()
         if not cookie_file:
@@ -160,7 +156,6 @@ class Instagram:
         Returns:
             Profile | None: The Instagram profile of the user,
             or None if the profile doesn't exist.
-
         """
         try:
             profile: Profile = Profile.from_username(self.loader.context, username)
@@ -183,7 +178,6 @@ class Instagram:
 
         Raises:
             SystemExit: If no cookies.sqlite file is found.
-
         """
         default_cookie_file = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
