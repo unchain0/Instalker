@@ -54,3 +54,4 @@ def setup_logging() -> None:
     # Suppress external library logs
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("instaloader").setLevel(logging.INFO)
+    logging.getLogger("PIL").setLevel(logging.INFO)
