@@ -101,6 +101,7 @@ class Instagram:
                 latest_stamps=self.latest_stamps,
             )
             with contextlib.suppress(KeyError):
+                self.loader.download_highlights(profile, fast_update=True)
                 self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
 
         self.logger.info("Download completed.")
