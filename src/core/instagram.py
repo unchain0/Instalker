@@ -3,10 +3,8 @@ import logging
 from glob import glob
 from os.path import expanduser
 from platform import system
-from random import randint
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
-from time import sleep
 
 import instaloader
 from instaloader import Profile, ProfileNotExistsException
@@ -77,7 +75,7 @@ class Instagram:
         """
         progress_bar = tqdm(
             self.users,
-            desc="Downloading profiles",
+            desc="Downloading user profiles",
             unit="profile",
             postfix={"user": None},
         )
@@ -86,7 +84,6 @@ class Instagram:
             profile = self.get_instagram_profile(user)
 
             if profile is None:
-                sleep(randint(3, 7))
                 continue
 
             if profile.is_private and not profile.followed_by_viewer:
