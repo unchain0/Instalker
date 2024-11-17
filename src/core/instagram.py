@@ -3,10 +3,8 @@ import logging
 from glob import glob
 from os.path import expanduser
 from platform import system
-from random import randint
 from shutil import rmtree
 from sqlite3 import OperationalError, connect
-from time import sleep
 
 import instaloader
 from instaloader import Profile, ProfileNotExistsException
@@ -39,9 +37,7 @@ class Instagram:
             loader (instaloader.Instaloader): An instance of the Instaloader class
                 for downloading Instagram data.
             logger (logging.Logger): A logger instance for logging class activities.
-
         """
-        """Initialize the Instagram class with default settings and configurations."""
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
         self.latest_stamps = instaloader.LatestStamps(LATEST_STAMPS)
@@ -79,7 +75,7 @@ class Instagram:
         """
         progress_bar = tqdm(
             self.users,
-            desc="Downloading profiles",
+            desc="Downloading user profiles",
             unit="profile",
             postfix={"user": None},
         )
@@ -94,17 +90,16 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            sleep(randint(5, 13))
-
+            self.loader.download_profiles(
+                {profile},
+                tagged=True,
+                stories=True,
+                reels=True,
+                latest_stamps=self.latest_stamps,
+            )
             with contextlib.suppress(KeyError):
-                self.loader.download_profiles(
-                    {profile},
-                    tagged=True,
-                    igtv=True,
-                    stories=True,
-                    reels=True,
-                    latest_stamps=self.latest_stamps,
-                )
+                self.loader.download_highlights(profile, fast_update=True)
+                self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
 
         self.logger.info("Download completed.")
 
@@ -124,12 +119,10 @@ class Instagram:
         Raises:
             SystemExit: If the cookies.sqlite file is not found or if the user is not
             logged in successfully in Firefox.
-
         """
         cookie_file = self.get_cookie_file()
         if not cookie_file:
-            msg = "No Firefox cookies.sqlite file found."
-            raise SystemExit(msg)
+            raise SystemExit("No Firefox cookies.sqlite file found.")
 
         self.logger.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
@@ -144,8 +137,9 @@ class Instagram:
         self.loader.context._session.cookies.update(cookie_data)
         username = self.loader.test_login()
         if not username:
-            msg = "Not logged in. Are you logged in successfully in Firefox?"
-            raise SystemExit(msg)
+            raise SystemExit(
+                "Not logged in. Are you logged in successfully in Firefox?"
+            )
 
         self.logger.info("Imported session cookie for '%s'.", username)
         self.loader.context.username = username  # type: ignore[assignment]
@@ -160,7 +154,6 @@ class Instagram:
         Returns:
             Profile | None: The Instagram profile of the user,
             or None if the profile doesn't exist.
-
         """
         try:
             profile: Profile = Profile.from_username(self.loader.context, username)
@@ -183,7 +176,6 @@ class Instagram:
 
         Raises:
             SystemExit: If no cookies.sqlite file is found.
-
         """
         default_cookie_file = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
@@ -191,6 +183,5 @@ class Instagram:
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
         cookie_files = glob(expanduser(default_cookie_file))
         if not cookie_files:
-            msg = "No Firefox cookies.sqlite file found."
-            raise SystemExit(msg)
+            raise SystemExit("No Firefox cookies.sqlite file found.")
         return cookie_files[0]

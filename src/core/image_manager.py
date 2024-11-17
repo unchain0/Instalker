@@ -5,7 +5,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from PIL import Image
-from send2trash import send2trash
 
 from src import DOWNLOAD_DIRECTORY
 
@@ -151,7 +150,7 @@ class ImageManager:
             file_path (Path): Full path to the file.
         """
         try:
-            send2trash(str(file_path))
+            os.unlink(file_path)
             self.logger.debug("File moved to Recycle Bin: '%s'", file_path)
         except Exception:
             self.logger.exception("Error removing file '%s'", file_path)
