@@ -50,18 +50,18 @@ class ImageManager:
             cutoff_delta (timedelta): The age limit for removing files.
                 Default is one week (timedelta(weeks=1)).
         """
-        media_files = self.__get_media_files()
+        media_files = self._get_media_files()
         removed_count = 0
         failed_removals = []
 
         for file_path in media_files:
-            if self.__is_file_older_than(file_path, cutoff_delta):
-                if self.__remove_file(file_path):
+            if self._is_file_older_than(file_path, cutoff_delta):
+                if self._remove_file(file_path):
                     removed_count += 1
                 else:
                     failed_removals.append(file_path)
 
-        self.__log_removal_summary(removed_count, failed_removals)
+        self._log_removal_summary(removed_count, failed_removals)
 
     def remove_small_images(self: "ImageManager", min_size: tuple[int, int]) -> None:
         """
@@ -70,7 +70,7 @@ class ImageManager:
         Args:
             min_size (tuple[int, int]): Minimum width and height in pixels.
         """
-        media_files = self.__get_media_files()
+        media_files = self._get_media_files()
         removed_count = 0
         failed_removals = []
 
@@ -85,7 +85,7 @@ class ImageManager:
                 img.close()  # Fecha o arquivo explicitamente
 
                 if width < min_size[0] or height < min_size[1]:
-                    if self.__remove_file(file_path):
+                    if self._remove_file(file_path):
                         removed_count += 1
                         self.logger.debug(
                             f"Removed small image: {file_path} ({width}x{height})"
@@ -96,9 +96,9 @@ class ImageManager:
                 self.logger.exception(f"Error processing image {file_path}")
                 failed_removals.append(file_path)
 
-        self.__log_removal_summary(removed_count, failed_removals)
+        self._log_removal_summary(removed_count, failed_removals)
 
-    def __get_media_files(self: "ImageManager") -> list[Path]:
+    def _get_media_files(self: "ImageManager") -> list[Path]:
         """
         Get all the image files in the download directory and its subdirectories.
 
@@ -114,7 +114,7 @@ class ImageManager:
         self.logger.debug("Found %d media files.", len(media_files))
         return media_files
 
-    def __is_file_older_than(
+    def _is_file_older_than(
         self: "ImageManager",
         file_path: Path,
         time_delta: timedelta,
@@ -142,7 +142,7 @@ class ImageManager:
         else:
             return is_older
 
-    def __remove_file(self: "ImageManager", file_path: Path) -> bool:
+    def _remove_file(self: "ImageManager", file_path: Path) -> bool:
         """
         Remove a specific file.
 
@@ -158,7 +158,7 @@ class ImageManager:
         else:
             return True
 
-    def __log_removal_summary(
+    def _log_removal_summary(
         self: "ImageManager",
         removed_count: int,
         failed_removals: list[Path],
