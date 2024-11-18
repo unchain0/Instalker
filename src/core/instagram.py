@@ -77,7 +77,13 @@ class Instagram:
                 latest_stamps=self.latest_stamps,
             )
             with contextlib.suppress(Exception):
-                self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
+                self.loader.download_igtv(
+                    profile, latest_stamps=self.latest_stamps
+                )  # Sometimes it throws up an unexpected exception
+            with contextlib.suppress(Exception):
+                self.loader.download_highlights(
+                    profile, fast_update=True
+                )  # Sometimes it throws up an unexpected exception
 
         self.logger.info("Download completed.")
 
@@ -104,7 +110,7 @@ class Instagram:
             cookie_data = conn.execute(
                 "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
             )
-        self.loader.context._session.cookies.update(cookie_data)  # type: ignore[arg-type]
+        self.loader.context._session.cookies.update(cookie_data)
         username = self.loader.test_login()
         if not username:
             raise SystemExit(
