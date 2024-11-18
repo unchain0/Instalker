@@ -46,6 +46,7 @@
     * Copy the example users file:
 
     ```bash
+    cd src/resources/target
     cp users-example.json users.json
     ```
 
