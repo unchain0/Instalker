@@ -82,7 +82,7 @@ class ImageManager:
 
                 img = Image.open(file_path)
                 width, height = img.size
-                img.close()  # Fecha o arquivo explicitamente
+                img.close()
 
                 if width < min_size[0] or height < min_size[1]:
                     if self._remove_file(file_path):
@@ -151,7 +151,7 @@ class ImageManager:
         """
         try:
             os.unlink(file_path)
-            self.logger.debug("File moved to Recycle Bin: '%s'", file_path)
+            self.logger.debug("File removed: '%s'", file_path)
         except Exception:
             self.logger.exception("Error removing file '%s'", file_path)
             return False
