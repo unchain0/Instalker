@@ -6,13 +6,16 @@ from src.core.instagram import Instagram
 from src.utils.logger import setup_logging
 
 
-def clear_console() -> None:
-    """Clears the console based on the operating system."""
-    os.system("cls" if os.name == "nt" else "clear")
-
-
 def prompt_yes_no(message: str) -> bool:
-    """Prompts the user with a yes/no question and returns True for 'y'."""
+    """
+    Prompts the user with a yes/no question and returns True for 'y'.
+
+    Args:
+        message (str): The message to display to the user.
+
+    Returns:
+        bool: True if the user answers 'y', False otherwise
+    """
     while True:
         response = input(f"{message} (y/n): ").strip().lower()
         if response in ("y", "n"):
@@ -21,26 +24,21 @@ def prompt_yes_no(message: str) -> bool:
 
 
 def get_usernames() -> set[str]:
-    """Gets usernames inputted by the user, separated by spaces."""
-    users_input = input("Enter the usernames separated by a space: ").strip()
+    """
+    Gets usernames inputted by the user, separated by spaces.
+
+    Returns:
+        set[str]: The set of usernames.
+    """
+    users_input = input("Enter the username(s) separated by a space: ").strip()
     users = set(users_input.split())
     return users
 
 
-def main() -> None:
+def handle_image_management() -> None:
     """
-    Initialize and run the application.
-
-    This function performs the following steps:
-    1. Sets up logging for the application.
-    2. Clears the console.
-    3. Creates an instance of ImageManager and performs cleanup operations.
-    4. Creates an instance of Instagram and runs the main process.
+    Handle image management tasks.
     """
-    setup_logging()
-    logger = logging.getLogger(__name__)
-    clear_console()
-
     image_manager = ImageManager()
 
     if prompt_yes_no("Do you want to remove small images?"):
@@ -49,14 +47,31 @@ def main() -> None:
     if prompt_yes_no("Do you want to remove old images (more than 1 week)?"):
         image_manager.remove_old_images()
 
+
+def handle_instagram_download() -> None:
+    """
+    Handle Instagram downloading tasks.
+    """
     if prompt_yes_no("Do you want to add users manually?"):
         users = get_usernames()
         instagram = Instagram(users)
     else:
         instagram = Instagram(None)
 
-    logger.info("Starting the application")
     instagram.run()
+
+
+def main() -> None:
+    """
+    Initialize and run the application.
+    """
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    os.system("cls" if os.name == "nt" else "clear")
+
+    logger.info("Starting the application")
+    handle_image_management()
+    handle_instagram_download()
 
 
 if __name__ == "__main__":
