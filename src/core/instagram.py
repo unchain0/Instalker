@@ -39,6 +39,11 @@ class Instagram:
             sanitize_paths=True,
         )
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info(
+            "Initialized Instagram downloader with %d users and download directory: %s",
+            len(self.users),
+            self.download_directory,
+        )
 
     def run(self: "Instagram") -> None:
         """
@@ -52,18 +57,31 @@ class Instagram:
         """
         Download Instagram profiles and their content.
         """
+        self.logger.info("Starting download process for %d users", len(self.users))
         progress_bar = tqdm(
             self.users,
-            desc="Downloading user profiles",
+            desc="Downloading profiles",
             unit="profile",
-            postfix={"user": None},
+            bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]",
+            postfix={
+                "user": None,
+                "stories": 0,
+                "highlights": 0,
+            },
+            dynamic_ncols=True,
         )
         for user in progress_bar:
-            progress_bar.set_postfix({"user": user})
             profile = self._get_instagram_profile(user)
 
             if not profile:
+                self.logger.info("Profile '%s' not found", user)
                 continue
+
+            progress_bar.set_postfix(
+                user=user,
+                followers=f"{profile.followers:,}",
+                private="yes" if profile.is_private else "no",
+            )
 
             if profile.is_private and not profile.followed_by_viewer:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
@@ -76,21 +94,29 @@ class Instagram:
                 reels=True,
                 latest_stamps=self.latest_stamps,
             )
+            self.logger.debug("Downloaded main posts for '%s'", user)
+
             with contextlib.suppress(Exception):
-                self.loader.download_igtv(
-                    profile, latest_stamps=self.latest_stamps
-                )  # Sometimes it throws up an unexpected exception
+                self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
+                self.logger.debug("Downloaded IGTV content for '%s'", user)
+
             with contextlib.suppress(Exception):
-                self.loader.download_highlights(
-                    profile, fast_update=True
-                )  # Sometimes it throws up an unexpected exception
+                self.loader.download_highlights(profile, fast_update=True)
+                self.logger.debug("Downloaded highlights for '%s'", user)
 
         self.logger.info("Download completed.")
 
     def _remove_all_txt(self: "Instagram") -> None:
         """Remove all .txt files from the download directory."""
+        self.logger.debug("Cleaning up .txt files from %s", self.download_directory)
+        count = 0
         for txt in self.download_directory.glob("*.txt"):
-            rmtree(txt) if txt.is_dir() else txt.unlink()
+            try:
+                rmtree(txt) if txt.is_dir() else txt.unlink()
+                count += 1
+            except Exception as e:
+                self.logger.error("Failed to remove %s: %s", txt, e)
+        self.logger.info("Removed %d .txt files", count)
 
     def _import_session(self: "Instagram") -> None:
         """
@@ -110,7 +136,7 @@ class Instagram:
             cookie_data = conn.execute(
                 "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
             )
-        self.loader.context._session.cookies.update(cookie_data)
+        self.loader.context._session.cookies.update(cookie_data)  # type: ignore[arg-type]
         username = self.loader.test_login()
         if not username:
             raise SystemExit(
@@ -124,12 +150,25 @@ class Instagram:
         """
         Retrieve the Instagram profile of a given user.
         """
+        self.logger.debug("Retrieving profile for '%s'", username)
         try:
-            profile: Profile = Profile.from_username(self.loader.context, username)
+            profile = Profile.from_username(self.loader.context, username)
+            if not isinstance(profile, Profile):
+                self.logger.error("Unexpected type returned for profile '%s'", username)
+                return None
+            self.logger.debug(
+                "Profile retrieved - Username: %s, Posts: %d, Private: %s",
+                username,
+                profile.mediacount,
+                profile.is_private,
+            )
+            return profile
         except ProfileNotExistsException:
-            self.logger.info("Profile '%s' not found.", username)
+            self.logger.warning("Profile '%s' not found", username)
             return None
-        return profile
+        except Exception as e:
+            self.logger.error("Error retrieving profile '%s': %s", username, e)
+            return None
 
     @staticmethod
     def _get_cookie_file() -> str | None:
