@@ -16,15 +16,8 @@ class ImageManager:
         ".jpg",
         ".jpeg",
         ".png",
-        ".gif",
-        ".bmp",
-        ".tiff",
         ".mp4",
-        ".avi",
-        ".mov",
         ".mkv",
-        ".flv",
-        ".wmv",
         ".mpeg",
         ".mpg",
     )
@@ -38,6 +31,9 @@ class ImageManager:
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info(
+            "Initialized ImageManager with directory: %s", self.download_directory
+        )
 
     def remove_old_images(
         self: "ImageManager",
@@ -50,6 +46,9 @@ class ImageManager:
             cutoff_delta (timedelta): The age limit for removing files.
                 Default is one week (timedelta(weeks=1)).
         """
+        self.logger.info("Starting removal of images older than %s", cutoff_delta)
+        media_files = self._get_media_files()
+
         media_files = self._get_media_files()
         removed_count = 0
         failed_removals = []
@@ -70,13 +69,16 @@ class ImageManager:
         Args:
             min_size (tuple[int, int]): Minimum width and height in pixels.
         """
+        self.logger.info(
+            "Starting removal of images smaller than %dx%d", min_size[0], min_size[1]
+        )
         media_files = self._get_media_files()
+        self.logger.debug("Found %d files to process", len(media_files))
         removed_count = 0
         failed_removals = []
 
         for file_path in media_files:
             try:
-                # Skip if not an image file (e.g., videos)
                 if not imghdr.what(file_path):
                     continue
 
@@ -84,14 +86,18 @@ class ImageManager:
                 width, height = img.size
                 img.close()
 
-                if width < min_size[0] or height < min_size[1]:
-                    if self._remove_file(file_path):
-                        removed_count += 1
-                        self.logger.debug(
-                            f"Removed small image: {file_path} ({width}x{height})"
-                        )
-                    else:
-                        failed_removals.append(file_path)
+                if width >= min_size[0] and height >= min_size[1]:
+                    continue
+
+                if not self._remove_file(file_path):
+                    failed_removals.append(file_path)
+                    continue
+
+                removed_count += 1
+                self.logger.debug(
+                    f"Removed small image: {file_path} ({width}x{height})"
+                )
+
             except Exception:
                 self.logger.exception(f"Error processing image {file_path}")
                 failed_removals.append(file_path)
