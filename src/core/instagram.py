@@ -132,10 +132,10 @@ class Instagram:
                 self.logger.error("Unexpected type returned for profile '%s'", username)
                 return None
             self.logger.debug(
-                "Profile retrieved - Username: %s, Posts: %d, Private: %s",
+                "Profile retrieved - Username: %s, Followers: %d, Posts: %d",
                 username,
+                profile.followers,
                 profile.mediacount,
-                profile.is_private,
             )
             return profile
         except ProfileNotExistsException:
