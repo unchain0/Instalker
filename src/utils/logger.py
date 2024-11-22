@@ -9,9 +9,6 @@ from src import LOG_DIRECTORY
 def setup_logging() -> None:
     """
     Configure application logging with rotation and formatting.
-
-    Args:
-        log_dir: Directory for log files. Defaults to 'logs' in resources.
     """
     # Reset existing handlers
     for handler in logging.root.handlers[:]:
