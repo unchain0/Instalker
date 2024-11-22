@@ -3,11 +3,9 @@ import logging
 from glob import glob
 from os.path import expanduser
 from platform import system
-from shutil import rmtree
 from sqlite3 import OperationalError, connect
 
-import instaloader
-from instaloader import Profile, ProfileNotExistsException
+from instaloader import Profile, ProfileNotExistsException, instaloader
 from tqdm import tqdm
 
 from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
@@ -33,7 +31,6 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             quiet=True,
             save_metadata=False,
-            max_connection_attempts=1,
             fatal_status_codes=[400, 401],
             rate_controller=lambda ctx: StealthRateController(ctx),
             sanitize_paths=True,
@@ -49,7 +46,6 @@ class Instagram:
         """
         Execute the main sequence of operations for the class.
         """
-        self._remove_all_txt()
         self._import_session()
         self._download()
 
@@ -62,12 +58,6 @@ class Instagram:
             self.users,
             desc="Downloading profiles",
             unit="profile",
-            bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]",
-            postfix={
-                "user": None,
-                "stories": 0,
-                "highlights": 0,
-            },
             dynamic_ncols=True,
         )
         for user in progress_bar:
@@ -79,8 +69,6 @@ class Instagram:
 
             progress_bar.set_postfix(
                 user=user,
-                followers=f"{profile.followers:,}",
-                private="yes" if profile.is_private else "no",
             )
 
             if profile.is_private and not profile.followed_by_viewer:
@@ -105,18 +93,6 @@ class Instagram:
                 self.logger.debug("Downloaded highlights for '%s'", user)
 
         self.logger.info("Download completed.")
-
-    def _remove_all_txt(self: "Instagram") -> None:
-        """Remove all .txt files from the download directory."""
-        self.logger.debug("Cleaning up .txt files from %s", self.download_directory)
-        count = 0
-        for txt in self.download_directory.glob("*.txt"):
-            try:
-                rmtree(txt) if txt.is_dir() else txt.unlink()
-                count += 1
-            except Exception as e:
-                self.logger.error("Failed to remove %s: %s", txt, e)
-        self.logger.info("Removed %d .txt files", count)
 
     def _import_session(self: "Instagram") -> None:
         """
