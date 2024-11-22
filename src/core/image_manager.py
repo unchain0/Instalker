@@ -73,7 +73,6 @@ class ImageManager:
             "Starting removal of images smaller than %dx%d", min_size[0], min_size[1]
         )
         media_files = self._get_media_files()
-        self.logger.debug("Found %d files to process", len(media_files))
         removed_count = 0
         failed_removals = []
 
