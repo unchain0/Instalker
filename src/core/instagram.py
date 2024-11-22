@@ -126,7 +126,6 @@ class Instagram:
         """
         Retrieve the Instagram profile of a given user.
         """
-        self.logger.debug("Retrieving profile for '%s'", username)
         try:
             profile = Profile.from_username(self.loader.context, username)
             if not isinstance(profile, Profile):
