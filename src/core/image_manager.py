@@ -93,9 +93,6 @@ class ImageManager:
                     continue
 
                 removed_count += 1
-                self.logger.debug(
-                    f"Removed small image: {file_path} ({width}x{height})"
-                )
 
             except Exception:
                 self.logger.exception(f"Error processing image {file_path}")
