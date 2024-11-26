@@ -5,7 +5,7 @@ from os.path import expanduser
 from platform import system
 from sqlite3 import OperationalError, connect
 
-from instaloader import Profile, ProfileNotExistsException, instaloader
+from instaloader import Instaloader, LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
 from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
@@ -26,20 +26,18 @@ class Instagram:
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
-        self.latest_stamps = instaloader.LatestStamps(LATEST_STAMPS)
-        self.loader = instaloader.Instaloader(
-            dirname_pattern=str(self.download_directory),
-            quiet=True,
-            save_metadata=False,
-            fatal_status_codes=[400, 401],
-            rate_controller=lambda ctx: StealthRateController(ctx),
-            sanitize_paths=True,
-        )
+        self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.loader = Instaloader(
+            quiet=True,
+            dirname_pattern=str(self.download_directory),
+            save_metadata=False,
+            post_metadata_txt_pattern="",
+            rate_controller=lambda ctx: StealthRateController(ctx),
+        )
         self.logger.info(
-            "Initialized Instagram downloader with %d users and download directory: %s",
+            "Initialized Instagram downloader with %d users",
             len(self.users),
-            self.download_directory,
         )
 
     def run(self: "Instagram") -> None:
@@ -58,13 +56,10 @@ class Instagram:
             self.users,
             desc="Downloading profiles",
             unit="profile",
-            dynamic_ncols=True,
         )
         for user in progress_bar:
             profile = self._get_instagram_profile(user)
-
             if not profile:
-                self.logger.info("Profile '%s' not found", user)
                 continue
 
             progress_bar.set_postfix(
@@ -82,7 +77,7 @@ class Instagram:
                 reels=True,
                 latest_stamps=self.latest_stamps,
             )
-            self.logger.debug("Downloaded main posts for '%s'", user)
+            self.logger.debug("Downloaded timeline for '%s'", user)
 
             with contextlib.suppress(Exception):
                 self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
@@ -102,7 +97,6 @@ class Instagram:
         if not cookie_file:
             raise SystemExit("No Firefox cookies.sqlite file found.")
 
-        self.logger.info("Using cookies from %s.", cookie_file)
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
             cookie_data = conn.execute(
@@ -139,7 +133,7 @@ class Instagram:
             )
             return profile
         except ProfileNotExistsException:
-            self.logger.warning("Profile '%s' not found", username)
+            self.logger.info("Profile '%s' not found", username)
             return None
         except Exception as e:
             self.logger.error("Error retrieving profile '%s': %s", username, e)
