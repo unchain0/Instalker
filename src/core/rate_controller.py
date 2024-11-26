@@ -20,35 +20,37 @@ class StealthRateController(RateController):
 
     def sleep(self, secs: float) -> None:
         """Add randomized human-like delays."""
-        # Add random variation (±25%)
-        jitter = secs * uniform(-0.25, 0.25)
-        adjusted_sleep = max(0.2, secs + jitter)
+        # Add random variation (±15%)
+        jitter = secs * uniform(-0.15, 0.15)
+        adjusted_sleep = max(0.1, secs + jitter)
 
-        # Add micro-pauses with more variation
-        chunks = int(adjusted_sleep / 0.7)  # Larger chunks
+        # Add micro-pauses for more human-like behavior
+        chunks = int(adjusted_sleep / 0.5)
         for _ in range(chunks):
-            time.sleep(0.7 + uniform(0.2, 0.8))
+            time.sleep(0.5 + uniform(0.1, 0.3))
 
-        remaining = adjusted_sleep % 0.7
+        remaining = adjusted_sleep % 0.5
         if remaining > 0:
-            time.sleep(remaining + uniform(0.1, 0.3))
+            time.sleep(remaining)
 
     def wait_before_query(self, query_type: str) -> None:
         """Enhanced wait logic with variable delays."""
         current_time = time.monotonic()
 
-        # Increased minimum delay between requests
-        min_delay = uniform(3.0, 7.0)
+        # Minimum delay between requests
+        min_delay = uniform(2.0, 4.0)
 
+        # Time since last request
         time_since_last = current_time - self.last_request_time
         if time_since_last < min_delay:
             self.sleep(min_delay - time_since_last)
 
-        # Increased backoff after 1 hour
+        # Calculate session duration and adjust delays
         session_duration = current_time - self.session_start_time
-        if session_duration > 3600:
-            self.backoff_factor = min(3.0, self.backoff_factor * 1.2)
+        if session_duration > 3600:  # After 1 hour
+            self.backoff_factor = min(2.0, self.backoff_factor * 1.1)
 
+        # Apply backoff to standard wait time
         wait_time = self.query_waittime(query_type, current_time, False)
         adjusted_wait = wait_time * self.backoff_factor
 
@@ -59,15 +61,15 @@ class StealthRateController(RateController):
 
     def handle_429(self, query_type: str) -> None:
         """Enhanced 429 handling with exponential backoff."""
-
-        self.backoff_factor *= 2.0  # Increased multiplier
+        self.backoff_factor *= 1.5
         current_time = time.monotonic()
 
+        # Calculate longer wait time
         base_wait = self.query_waittime(query_type, current_time, True)
         extended_wait = base_wait * self.backoff_factor
 
-        # Increased random delay range
-        extra_delay = uniform(60, 300)  # 1-5 minutes
+        # Add random extra delay
+        extra_delay = uniform(30, 180)
         total_wait = extended_wait + extra_delay
 
         self._context.error(
