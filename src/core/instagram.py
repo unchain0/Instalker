@@ -33,6 +33,7 @@ class Instagram:
             dirname_pattern=str(self.download_directory),
             save_metadata=False,
             post_metadata_txt_pattern="",
+            fatal_status_codes=[400],
             rate_controller=lambda ctx: StealthRateController(ctx),
         )
         self.logger.info(
