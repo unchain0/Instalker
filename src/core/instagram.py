@@ -17,7 +17,11 @@ class Instagram:
     A class to manage Instagram profile downloads and session handling.
     """
 
-    def __init__(self: "Instagram", users: set[str] | None) -> None:
+    def __init__(
+        self: "Instagram",
+        users: set[str] | None = None,
+        download_highlights: bool = False,
+    ) -> None:
         """
         Initialize the Instagram class with default settings and configurations.
 
@@ -26,6 +30,7 @@ class Instagram:
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
+        self.download_highlights = download_highlights
         self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
@@ -84,9 +89,10 @@ class Instagram:
                 self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
                 self.logger.debug("Downloaded IGTV content for '%s'", user)
 
-            with contextlib.suppress(Exception):
-                self.loader.download_highlights(profile, fast_update=True)
-                self.logger.debug("Downloaded highlights for '%s'", user)
+            if self.download_highlights:
+                with contextlib.suppress(Exception):
+                    self.loader.download_highlights(profile, fast_update=True)
+                    self.logger.debug("Downloaded highlights for '%s'", user)
 
         self.logger.info("Download completed.")
 
