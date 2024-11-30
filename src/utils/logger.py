@@ -1,7 +1,7 @@
-import logging
-import sys
 from datetime import datetime
+from logging import DEBUG, INFO, WARNING, Formatter, StreamHandler, getLogger, root
 from logging.handlers import RotatingFileHandler
+from sys import stdout
 
 from src import LOG_DIRECTORY
 
@@ -9,23 +9,20 @@ from src import LOG_DIRECTORY
 def setup_logging() -> None:
     """
     Configure application logging with rotation and formatting.
-
-    Args:
-        log_dir: Directory for log files. Defaults to 'logs' in resources.
     """
     # Reset existing handlers
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
+    for handler in root.handlers[:]:
+        root.removeHandler(handler)
 
     # Log file path with timestamp
     log_file = LOG_DIRECTORY / f"instalker_{datetime.now():%Y-%m-%d}.log"
 
     # Formatters
-    file_formatter = logging.Formatter(
+    file_formatter = Formatter(
         fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    console_formatter = logging.Formatter(
+    console_formatter = Formatter(
         fmt="%(asctime)s | %(levelname)-8s | %(message)s",
         datefmt="%H:%M:%S",
     )
@@ -38,20 +35,20 @@ def setup_logging() -> None:
         encoding="utf-8",
     )
     file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(DEBUG)
 
     # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = StreamHandler(stdout)
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(INFO)
 
     # Root logger configuration
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger = getLogger()
+    root_logger.setLevel(DEBUG)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
     # Suppress external library logs
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("instaloader").setLevel(logging.INFO)
-    logging.getLogger("PIL").setLevel(logging.INFO)
+    getLogger("urllib3").setLevel(WARNING)
+    getLogger("instaloader").setLevel(INFO)
+    getLogger("PIL").setLevel(INFO)
