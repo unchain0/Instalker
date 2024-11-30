@@ -37,14 +37,13 @@ class ImageManager:
 
     def remove_old_images(
         self: "ImageManager",
-        cutoff_delta: timedelta = timedelta(weeks=1),
+        cutoff_delta: timedelta = timedelta(weeks=5),
     ) -> None:
         """
         Remove media files in the that are older than the specified duration.
 
         Args:
             cutoff_delta (timedelta): The age limit for removing files.
-                Default is one week (timedelta(weeks=1)).
         """
         self.logger.info("Starting removal of images older than %s", cutoff_delta)
         media_files = self._get_media_files()
