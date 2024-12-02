@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import timedelta
 
 from src.core.image_manager import ImageManager
 from src.core.instagram import Instagram
@@ -42,10 +43,24 @@ def handle_image_management() -> None:
     image_manager = ImageManager()
 
     if prompt_yes_no("Do you want to remove small images?"):
-        image_manager.remove_small_images(min_size=(256, 256))
+        try:
+            width = int(input("Enter the minimum width: "))
+            height = int(input("Enter the minimum height: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            return
 
-    if prompt_yes_no("Do you want to remove old images (more than 1 week)?"):
-        image_manager.remove_old_images()
+        min_size = (width, height)
+        image_manager.remove_small_images(min_size=min_size)
+
+    if prompt_yes_no("Do you want to remove old images?"):
+        try:
+            days = int(input("Enter the number of days: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            return
+
+        image_manager.remove_old_images(timedelta(days=days))
 
 
 def handle_instagram_download() -> None:
@@ -58,6 +73,7 @@ def handle_instagram_download() -> None:
     else:
         instagram = Instagram(None)
 
+    os.system("cls" if os.name == "nt" else "clear")
     instagram.run()
 
 
@@ -67,7 +83,6 @@ def main() -> None:
     """
     setup_logging()
     logger = logging.getLogger(__name__)
-    os.system("cls" if os.name == "nt" else "clear")
 
     logger.info("Starting the application")
     handle_image_management()
