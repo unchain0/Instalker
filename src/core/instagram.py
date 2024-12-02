@@ -73,6 +73,9 @@ class Instagram:
             )
 
             if profile.is_private and not profile.followed_by_viewer:
+                self.logger.debug(
+                    "Private profile - Only profile picture will be downloaded.",
+                )
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
@@ -84,10 +87,6 @@ class Instagram:
                 latest_stamps=self.latest_stamps,
             )
             self.logger.debug("Downloaded timeline for '%s'", user)
-
-            with contextlib.suppress(Exception):
-                self.loader.download_igtv(profile, latest_stamps=self.latest_stamps)
-                self.logger.debug("Downloaded IGTV content for '%s'", user)
 
             if self.download_highlights:
                 with contextlib.suppress(Exception):
@@ -133,7 +132,7 @@ class Instagram:
                 self.logger.error("Unexpected type returned for profile '%s'", username)
                 return None
             self.logger.debug(
-                "Profile retrieved - Username: %s, Followers: %d, Posts: %d",
+                "Profile retrieved - Username: '%s', Followers: %d, Posts: %d",
                 username,
                 profile.followers,
                 profile.mediacount,
@@ -143,7 +142,7 @@ class Instagram:
             self.logger.info("Profile '%s' not found", username)
             return None
         except Exception as e:
-            self.logger.error("Error retrieving profile '%s': %s", username, e)
+            self.logger.error("Error retrieving profile '%s': %s", username, str(e))
             return None
 
     @staticmethod
