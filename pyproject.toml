@@ -7,15 +7,15 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 instaloader = "^4.14.0"
 tqdm = "^4.67.1"
 pillow = "^11.0.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-ruff = "^0.7.4"
-mypy = "^1.13.0"
+pytest = "^8.3.4"
+ruff = "^0.8.4"
+mypy = "^1.14.0"
 ruff-lsp = "^0.0.59"
 types-tqdm = "^4.64.7"
 pre-commit = "^4.0.1"
@@ -26,7 +26,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.12"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
@@ -39,5 +38,4 @@ warn_unreachable = true
 strict_optional = true
 
 [tool.ruff]
-target-version = "py312"
 line-length = 88
