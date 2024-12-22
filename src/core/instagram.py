@@ -35,15 +35,10 @@ class Instagram:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
             quiet=True,
-            dirname_pattern=str(self.download_directory),
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400],
             rate_controller=lambda ctx: StealthRateController(ctx),
-        )
-        self.logger.info(
-            "Initialized Instagram downloader with %d users",
-            len(self.users),
         )
 
     def run(self: "Instagram") -> None:
@@ -71,6 +66,8 @@ class Instagram:
             progress_bar.set_postfix(
                 user=user,
             )
+
+            self.loader.dirname_pattern = str(DOWNLOAD_DIRECTORY / user)
 
             if profile.is_private and not profile.followed_by_viewer:
                 self.logger.debug(
