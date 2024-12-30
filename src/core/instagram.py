@@ -8,7 +8,6 @@ from instaloader import Instaloader, LatestStamps, Profile, ProfileNotExistsExce
 from tqdm import tqdm
 
 from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
-from src.core.rate_controller import StealthRateController
 
 
 class Instagram:
@@ -38,7 +37,6 @@ class Instagram:
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400],
-            rate_controller=lambda ctx: StealthRateController(ctx),
         )
 
     def run(self) -> None:
