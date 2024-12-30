@@ -19,15 +19,18 @@ class Instagram:
     def __init__(
         self,
         users: set[str] | None = None,
+        highlights: bool = False,
     ) -> None:
         """
         Initialize the Instagram class with default settings and configurations.
 
         Args:
             users (set[str]): The set of Instagram usernames to download content from.
+            highlights (bool): Whether to download highlights or not.
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
+        self.highlights = highlights
         self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
@@ -82,9 +85,11 @@ class Instagram:
                 tagged=False,  # Unestable feature
                 stories=True,
                 reels=True,
-                highlights=True,
                 latest_stamps=self.latest_stamps,
             )
+
+            if self.highlights:
+                self.loader.download_highlights(profile)
 
         self.logger.info("Download completed.")
 
