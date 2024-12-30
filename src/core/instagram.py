@@ -40,10 +40,6 @@ class Instagram:
             fatal_status_codes=[400],
             rate_controller=lambda ctx: StealthRateController(ctx),
         )
-        self.logger.info(
-            "Initialized Instagram downloader with %d users",
-            len(self.users),
-        )
 
     def run(self) -> None:
         """
