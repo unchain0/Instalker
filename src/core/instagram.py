@@ -1,4 +1,3 @@
-import contextlib
 import logging
 from glob import glob
 from os.path import expanduser
@@ -18,19 +17,20 @@ class Instagram:
     """
 
     def __init__(
-        self: "Instagram",
+        self,
         users: set[str] | None = None,
-        download_highlights: bool = False,
+        highlights: bool = False,
     ) -> None:
         """
         Initialize the Instagram class with default settings and configurations.
 
         Args:
             users (set[str]): The set of Instagram usernames to download content from.
+            highlights (bool): Whether to download highlights or not.
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
-        self.download_highlights = download_highlights
+        self.highlights = highlights
         self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
@@ -41,14 +41,14 @@ class Instagram:
             rate_controller=lambda ctx: StealthRateController(ctx),
         )
 
-    def run(self: "Instagram") -> None:
+    def run(self) -> None:
         """
         Execute the main sequence of operations for the class.
         """
         self._import_session()
         self._download()
 
-    def _download(self: "Instagram") -> None:
+    def _download(self) -> None:
         """
         Download Instagram profiles and their content.
         """
@@ -78,21 +78,18 @@ class Instagram:
 
             self.loader.download_profiles(
                 {profile},
-                tagged=True,
+                tagged=False,  # Unestable feature
                 stories=True,
                 reels=True,
                 latest_stamps=self.latest_stamps,
             )
-            self.logger.debug("Downloaded timeline for '%s'", user)
 
-            if self.download_highlights:
-                with contextlib.suppress(Exception):
-                    self.loader.download_highlights(profile, fast_update=True)
-                    self.logger.debug("Downloaded highlights for '%s'", user)
+            if self.highlights:
+                self.loader.download_highlights(profile)
 
         self.logger.info("Download completed.")
 
-    def _import_session(self: "Instagram") -> None:
+    def _import_session(self) -> None:
         """
         Import the session cookies from Firefox's cookies.sqlite file for Instagram.
         """
@@ -119,7 +116,7 @@ class Instagram:
         self.logger.info("Imported session cookie for '%s'.", username)
         self.loader.context.username = username  # type: ignore[assignment]
 
-    def _get_instagram_profile(self: "Instagram", username: str) -> Profile | None:
+    def _get_instagram_profile(self, username: str) -> Profile | None:
         """
         Retrieve the Instagram profile of a given user.
         """

@@ -1,6 +1,7 @@
 # 📸 Instalker
 
-**Instalker** is a project that automates the download of Instagram profiles, leveraging the `instaloader` library for efficient and organized data collection.
+**Instalker** is a project that automates the download of Instagram profiles, leveraging
+the `instaloader` library for efficient and organized data collection.
 
 ## ✨ Main Features
 
@@ -50,7 +51,8 @@
     cp users-example.json users.json
     ```
 
-    * Edit `users.json` and add the Instagram usernames you wish to track, following the format in the example.
+    * Edit `users.json` and add the Instagram usernames you wish to track,
+    following the format in the example.
 
 2. **Run the script:**
 
@@ -59,7 +61,3 @@
     ```
 
     * Follow the on-screen prompts to customize your download options.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to submit issues or pull requests to enhance the project.
