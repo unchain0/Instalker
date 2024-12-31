@@ -173,7 +173,7 @@ class ImageManager:
             failed_removals (list[Path]): List of files that failed to be removed.
         """
         self.logger.info(
-            "Process completed, %d files removed in %d files",
+            "Process completed, %d files removed in %d",
             removed_count,
             len(self.media_files),
         )

@@ -83,7 +83,7 @@ class Instagram:
             )
 
             if self.highlights:
-                self.loader.download_highlights(profile)
+                self.loader.download_highlights(profile, fast_update=True)
 
         self.logger.info("Download completed.")
 
@@ -111,7 +111,7 @@ class Instagram:
                 "Not logged in. Are you logged in successfully in Firefox?"
             )
 
-        self.logger.info("Imported session cookie for '%s'.", username)
+        self.logger.info("Imported session cookie for '%s'", username)
         self.loader.context.username = username  # type: ignore[assignment]
 
     def _get_instagram_profile(self, username: str) -> Profile | None:
