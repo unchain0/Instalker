@@ -16,27 +16,23 @@ class ImageManager:
         ".jpg",
         ".jpeg",
         ".png",
-        ".mp4",
-        ".mkv",
         ".mpeg",
         ".mpg",
     )
 
-    def __init__(self: "ImageManager") -> None:
+    def __init__(self) -> None:
         """
         Initialize the class with the download directory.
-
-        Args:
-            download_directory (Path): The directory to manage image files in.
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(
             "Initialized ImageManager with directory: %s", self.download_directory
         )
+        self.media_files = self._get_media_files()
 
     def remove_old_images(
-        self: "ImageManager",
+        self,
         cutoff_delta: timedelta = timedelta(weeks=4),
     ) -> None:
         """
@@ -48,13 +44,10 @@ class ImageManager:
         self.logger.info(
             "Starting removal of images older than %s days", cutoff_delta.days
         )
-        media_files = self._get_media_files()
-
-        media_files = self._get_media_files()
         removed_count = 0
         failed_removals = []
 
-        for file_path in media_files:
+        for file_path in self.media_files:
             if self._is_file_older_than(file_path, cutoff_delta):
                 if self._remove_file(file_path):
                     removed_count += 1
@@ -63,7 +56,7 @@ class ImageManager:
 
         self._log_removal_summary(removed_count, failed_removals)
 
-    def remove_small_images(self: "ImageManager", min_size: tuple[int, int]) -> None:
+    def remove_small_images(self, min_size: tuple[int, int]) -> None:
         """
         Remove images that are smaller than the specified dimensions.
 
@@ -101,7 +94,7 @@ class ImageManager:
 
         self._log_removal_summary(removed_count, failed_removals)
 
-    def _get_media_files(self: "ImageManager") -> list[Path]:
+    def _get_media_files(self) -> list[Path]:
         """
         Get all the image files in the download directory and its subdirectories.
 
@@ -118,7 +111,7 @@ class ImageManager:
         return media_files
 
     def _is_file_older_than(
-        self: "ImageManager",
+        self,
         file_path: Path,
         time_delta: timedelta,
     ) -> bool:
@@ -128,6 +121,9 @@ class ImageManager:
         Args:
             file_path (Path): Full path to the file.
             time_delta (timedelta): Time duration to compare against.
+
+        Returns:
+            bool: True if the file is older than the time delta. False otherwise.
         """
         try:
             file_mod_time = datetime.fromtimestamp(
@@ -145,12 +141,15 @@ class ImageManager:
         else:
             return is_older
 
-    def _remove_file(self: "ImageManager", file_path: Path) -> bool:
+    def _remove_file(self, file_path: Path) -> bool:
         """
         Remove a specific file.
 
         Args:
             file_path (Path): Full path to the file.
+
+        Returns:
+            bool: True if the file was removed successfully. False otherwise.
         """
         try:
             os.unlink(file_path)
@@ -162,7 +161,7 @@ class ImageManager:
             return True
 
     def _log_removal_summary(
-        self: "ImageManager",
+        self,
         removed_count: int,
         failed_removals: list[Path],
     ) -> None:
@@ -173,8 +172,12 @@ class ImageManager:
             removed_count (int): Number of files successfully removed.
             failed_removals (list[Path]): List of files that failed to be removed.
         """
-        self.logger.info("Process completed. %d files removed.", removed_count)
+        self.logger.info(
+            "Process completed, %d files removed in %d files",
+            removed_count,
+            len(self.media_files),
+        )
         if failed_removals:
+            for file in failed_removals:
+                self.logger.warning(file)
             self.logger.warning("Failed to remove %d files:", len(failed_removals))
-            for failed_file in failed_removals:
-                self.logger.warning(" - %s", failed_file)
