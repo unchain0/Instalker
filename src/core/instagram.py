@@ -76,7 +76,7 @@ class Instagram:
 
             self.loader.download_profiles(
                 {profile},
-                tagged=False,  # Unestable feature
+                tagged=True,  # Unestable feature
                 stories=True,
                 reels=True,
                 latest_stamps=self.latest_stamps,
