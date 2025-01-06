@@ -11,5 +11,8 @@ LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 LATEST_STAMPS = SOURCE_DIRECTORY / "latest_stamps.ini"
 
-with Path.open(SOURCE_DIRECTORY / "target" / "users.json") as f:
-    TARGET_USERS: set[str] = set(json.load(f))
+try:
+    with Path.open(SOURCE_DIRECTORY / "target" / "users.json") as f:
+        TARGET_USERS: set[str] = set(json.load(f))
+except FileNotFoundError:
+    TARGET_USERS = set()
