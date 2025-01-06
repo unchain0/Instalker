@@ -76,14 +76,20 @@ class Instagram:
 
             self.loader.download_profiles(
                 {profile},
-                tagged=True,  # Unestable feature
+                tagged=False,  # Unestable feature
                 stories=True,
                 reels=True,
                 latest_stamps=self.latest_stamps,
             )
 
             if self.highlights:
-                self.loader.download_highlights(profile, fast_update=True)
+                try:
+                    self.loader.download_highlights(profile, fast_update=True)
+                except KeyError:
+                    self.logger.error(
+                        "Error downloading highlights for profile '%s'",
+                        profile.username,
+                    )
 
         self.logger.info("Download completed.")
 
