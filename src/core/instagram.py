@@ -8,7 +8,6 @@ from instaloader import Instaloader, LatestStamps, Profile, ProfileNotExistsExce
 from tqdm import tqdm
 
 from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
-from src.core.rate_controller import StealthRateController
 
 
 class Instagram:
@@ -38,7 +37,6 @@ class Instagram:
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400],
-            rate_controller=lambda ctx: StealthRateController(ctx),
         )
 
     def run(self) -> None:
@@ -76,16 +74,25 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            self.loader.download_profiles(
-                {profile},
-                tagged=False,  # Unestable feature
-                stories=True,
-                reels=True,
-                latest_stamps=self.latest_stamps,
-            )
+            try:
+                self.loader.download_profiles(
+                    {profile},
+                    tagged=False,  # Unestable feature
+                    stories=True,
+                    reels=True,
+                    latest_stamps=self.latest_stamps,
+                )
+            except KeyError:
+                self.logger.error("Error downloading profile '%s'", profile.username)
 
             if self.highlights:
-                self.loader.download_highlights(profile)
+                try:
+                    self.loader.download_highlights(profile, fast_update=True)
+                except KeyError:
+                    self.logger.error(
+                        "Error downloading highlights for profile '%s'",
+                        profile.username,
+                    )
 
         self.logger.info("Download completed.")
 
@@ -113,7 +120,7 @@ class Instagram:
                 "Not logged in. Are you logged in successfully in Firefox?"
             )
 
-        self.logger.info("Imported session cookie for '%s'.", username)
+        self.logger.info("Imported session cookie for '%s'", username)
         self.loader.context.username = username  # type: ignore[assignment]
 
     def _get_instagram_profile(self, username: str) -> Profile | None:
