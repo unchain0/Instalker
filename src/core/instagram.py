@@ -74,13 +74,16 @@ class Instagram:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            self.loader.download_profiles(
-                {profile},
-                tagged=False,  # Unestable feature
-                stories=True,
-                reels=True,
-                latest_stamps=self.latest_stamps,
-            )
+            try:
+                self.loader.download_profiles(
+                    {profile},
+                    tagged=False,  # Unestable feature
+                    stories=True,
+                    reels=True,
+                    latest_stamps=self.latest_stamps,
+                )
+            except KeyError:
+                self.logger.error("Error downloading profile '%s'", profile.username)
 
             if self.highlights:
                 try:
