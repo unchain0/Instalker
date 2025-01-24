@@ -12,13 +12,7 @@ from src import DOWNLOAD_DIRECTORY
 class ImageManager:
     """Manages image files in a directory, retrieval and removal based on age."""
 
-    SUPPORTED_EXTENSIONS = (
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".mpeg",
-        ".mpg",
-    )
+    SUPPORTED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".mpeg", ".mpg", ".mp4", ".webp")
 
     def __init__(self) -> None:
         """
@@ -42,7 +36,7 @@ class ImageManager:
             cutoff_delta (timedelta): The age limit for removing files.
         """
         self.logger.info(
-            "Starting removal of images older than %s days", cutoff_delta.days
+            "Starting removal of media older than %s days", cutoff_delta.days
         )
         removed_count = 0
         failed_removals = []
