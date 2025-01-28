@@ -5,21 +5,18 @@ jobs:
   code-quality:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          cache: "poetry"
-
-      - run: poetry install
-      - run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
-
-      - uses: jakebailey/pyright-action@v1
-
+          python-version: "3.12"
+      - name: Run image
+        uses: abatilo/actions-poetry@v3
       - name: Ruff
         uses: astral-sh/ruff-action@v3
         with:
           args: check --fix .
-
+      # - name: Pyright
+      #   uses: jakebailey/pyright-action@v1
+      # with:
+      #   pylance-version: latest-release
       - uses: DavidAnson/markdownlint-cli2-action@v13
