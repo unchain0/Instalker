@@ -1,3 +1,5 @@
+"""Settings configuration for the Instalker application."""
+
 import json
 from pathlib import Path
 

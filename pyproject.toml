@@ -8,34 +8,30 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-instaloader = "^4.14.0"
+instaloader = "^4.14.1"
 tqdm = "^4.67.1"
 pillow = "^11.1.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-ruff = "^0.9.1"
-mypy = "^1.14.1"
-ruff-lsp = "^0.0.60"
+ruff = "^0.9.3"
 types-tqdm = "^4.64.7"
-pre-commit = "^4.0.1"
 types-pillow = "^10.2.0.20240822"
+pyright = "^1.1.392.post0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.mypy]
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-warn_unreachable = true
-strict_optional = true
-
 [tool.ruff]
 line-length = 88
+indent-width = 4
+target-version = "py312"
+select = ["ALL"]
+ignore = ["SLF001", "PTH111", "PTH207", "S605"]
+per-file-ignores = { "run.py" = ["ERA001"], "__init__.py" = ["D104"] }
+
+[tool.pyright]
+typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
+reportUnknownMemberType = "none"
+reportConstantRedefinition = "none"
