@@ -27,7 +27,7 @@ jobs:
       - name: Ruff
         uses: astral-sh/ruff-action@v3
         with:
-          args: --fix
+          args: check --fix .
 
       - name: Pyright
         uses: jakebailey/pyright-action@v1
