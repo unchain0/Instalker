@@ -27,7 +27,7 @@ indent-width = 4
 target-version = "py312"
 select = ["ALL"]
 ignore = ["SLF001", "PTH111", "PTH207", "S605"]
-per-file-ignores = { "run.py" = ["ERA001"] }
+per-file-ignores = { "run.py" = ["ERA001"], "__init__.py" = ["D104"] }
 
 [tool.pyright]
 typeCheckingMode = "strict"
