@@ -1,26 +1,18 @@
-[tool.poetry]
-name = "Instalker"
+[project]
+name = "instalker"
 version = "0.1.0"
 description = "Download profiles on Instagram"
-authors = ["Felippe A. <4drade@gmail.com>"]
 readme = "README.md"
-package-mode = false
+requires-python = ">=3.12"
+dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
 
-[tool.poetry.dependencies]
-python = ">=3.12,<3.13"
-instaloader = "^4.14.1"
-tqdm = "^4.67.1"
-pillow = "^11.1.0"
-
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.9.3"
-types-tqdm = "^4.64.7"
-types-pillow = "^10.2.0.20240822"
-pyright = "^1.1.392.post0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+	"pyright>=1.1.393",
+	"ruff>=0.9.4",
+	"types-pillow>=10.2.0.20240822",
+	"types-tqdm>=4.67.0.20241221",
+]
 
 [tool.ruff]
 line-length = 88
