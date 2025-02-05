@@ -1,7 +1,8 @@
 """Module that sets up logging for the Instalker application."""
 
 import datetime
-from logging import DEBUG, INFO, WARNING, Formatter, StreamHandler, getLogger, root
+import logging
+from logging import DEBUG, Formatter, StreamHandler, getLogger, root
 from logging.handlers import RotatingFileHandler
 from sys import stdout
 
@@ -43,7 +44,7 @@ def setup_logging() -> None:
     # Console handler
     console_handler = StreamHandler(stdout)
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(INFO)
+    console_handler.setLevel(logging.INFO)
 
     # Root logger configuration
     root_logger = getLogger()
@@ -51,7 +52,7 @@ def setup_logging() -> None:
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
-    # Suppress external library logs
-    getLogger("urllib3").setLevel(WARNING)
-    getLogger("instaloader").setLevel(INFO)
-    getLogger("PIL").setLevel(INFO)
+    # Suppress external library logs using fully-qualified logging levels
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("instaloader").setLevel(logging.INFO)
+    logging.getLogger("PIL").setLevel(logging.INFO)
