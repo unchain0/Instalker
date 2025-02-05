@@ -21,6 +21,7 @@ def prompt_yes_no(message: str) -> bool:
 
     Returns:
         bool: True if the user answers 'y', False otherwise.
+
     """
     while True:
         response = input(f"{message} (y/n): ").strip().lower()
@@ -34,6 +35,7 @@ def get_usernames() -> set[str]:
 
     Returns:
         set[str]: The set of usernames.
+
     """
     users_input = input("Enter the username(s) separated by a space: ").strip()
     return set(users_input.split())
@@ -44,9 +46,10 @@ def parse_arguments() -> argparse.Namespace:
 
     Returns:
         argparse.Namespace: Parsed arguments.
+
     """
     parser = argparse.ArgumentParser(
-        description="Instalker: Automated Instagram profile downloader and image manager."
+        description="Automated Instagram profile downloader and image manager.",
     )
     parser.add_argument(
         "--min-width",
@@ -66,7 +69,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--manual-users",
         action="store_true",
-        help="Prompt for manual Instagram usernames input; if not set, TARGET_USERS will be used",
+        help="Prompt for Instagram usernames input; else, TARGET_USERS will be used",
     )
     return parser.parse_args()
 
@@ -78,27 +81,25 @@ def handle_image_management(args: argparse.Namespace) -> None:
     # Remove small images
     if args.min_width is not None and args.min_height is not None:
         image_manager.remove_small_images(min_size=(args.min_width, args.min_height))
-    else:
-        if prompt_yes_no("Do you want to remove small images interactively?"):
-            try:
-                width = int(input("Enter the minimum width: "))
-                height = int(input("Enter the minimum height: "))
-            except ValueError:
-                logging.exception("Invalid input. Please enter a number.")
-            else:
-                image_manager.remove_small_images(min_size=(width, height))
+    elif prompt_yes_no("Do you want to remove small images interactively?"):
+        try:
+            width = int(input("Enter the minimum width: "))
+            height = int(input("Enter the minimum height: "))
+        except ValueError:
+            logging.exception("Invalid input. Please enter a number.")
+        else:
+            image_manager.remove_small_images(min_size=(width, height))
 
     # Remove old images
     if args.remove_old is not None:
         image_manager.remove_old_images(timedelta(days=args.remove_old))
-    else:
-        if prompt_yes_no("Do you want to remove old images interactively?"):
-            try:
-                days = int(input("Enter the number of days: "))
-            except ValueError:
-                logging.exception("Invalid input. Please enter a number.")
-            else:
-                image_manager.remove_old_images(timedelta(days=days))
+    elif prompt_yes_no("Do you want to remove old images interactively?"):
+        try:
+            days = int(input("Enter the number of days: "))
+        except ValueError:
+            logging.exception("Invalid input. Please enter a number.")
+        else:
+            image_manager.remove_old_images(timedelta(days=days))
 
 
 def handle_instagram_download(args: argparse.Namespace) -> None:

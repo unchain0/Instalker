@@ -116,11 +116,11 @@ class Instagram:
                     rows = conn.execute(query).fetchall()
                 except OperationalError:
                     rows = conn.execute(
-                        "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
+                        "SELECT name, value FROM moz_cookies "
+                        "WHERE host LIKE '%instagram.com'",
                     ).fetchall()
         except Exception:
             self.logger.exception("Failed to connect to the Firefox cookies database.")
-            raise SystemExit("Failed to import cookies.") from None
 
         # Update cookie jar individually
         for name, value in rows:
