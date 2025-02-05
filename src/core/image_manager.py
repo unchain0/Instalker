@@ -155,8 +155,7 @@ class ImageManager:
 
         """
         try:
-            # This is a security risk, use os.remove instead
-            Path.unlink(file_path)
+            file_path.unlink()
             self.logger.debug("File removed: '%s'", file_path)
         except Exception:
             self.logger.exception("Error removing file '%s'", file_path)
