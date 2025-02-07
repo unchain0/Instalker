@@ -1,6 +1,6 @@
-"""Provides the ImageManager class for managing image files in a directory.
+"""Provides the FileManager class for managing file operations in a directory.
 
-It includes functionality to remove old images and images smaller than
+It includes functionality to remove old files and files smaller than
 specified dimensions.
 """
 
@@ -15,8 +15,8 @@ from PIL import Image
 from src import DOWNLOAD_DIRECTORY
 
 
-class ImageManager:
-    """Manages image files in a directory, retrieval and removal based on age."""
+class FileManager:
+    """Manages files in a directory, retrieval and removal based on age."""
 
     SUPPORTED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".mpeg", ".mpg", ".mp4", ".webp")
 
@@ -25,16 +25,16 @@ class ImageManager:
         self.download_directory = DOWNLOAD_DIRECTORY
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(
-            "Initialized ImageManager with directory: %s",
+            "Initialized FileManager with directory: %s",
             self.download_directory,
         )
-        self.media_files = self._get_media_files()
+        self.media_files = self._get_files()
 
-    def remove_old_images(
+    def remove_old_files(
         self,
-        cutoff_delta: timedelta = timedelta(weeks=4),
+        cutoff_delta: timedelta = timedelta(days=30),
     ) -> None:
-        """Remove media files in the that are older than the specified duration.
+        """Remove files in the directory that are older than the specified duration.
 
         Args:
             cutoff_delta (timedelta): The age limit for removing files.
@@ -56,23 +56,23 @@ class ImageManager:
 
         self._log_removal_summary(removed_count, failed_removals)
 
-    def remove_small_images(self, min_size: tuple[int, int]) -> None:
-        """Remove images that are smaller than the specified dimensions.
+    def remove_small_files(self, min_size: tuple[int, int]) -> None:
+        """Remove files that are smaller than the specified dimensions.
 
         Args:
             min_size (tuple[int, int]): Minimum width and height in pixels.
 
         """
         self.logger.info(
-            "Starting removal of images smaller than %dx%d",
+            "Starting removal of files smaller than %dx%d",
             min_size[0],
             min_size[1],
         )
-        media_files = self._get_media_files()
+        files = self._get_files()
         removed_count = 0
         failed_removals: list[Path] = []
 
-        for file_path in media_files:
+        for file_path in files:
             try:
                 if not imghdr.what(file_path):
                     continue
@@ -91,17 +91,17 @@ class ImageManager:
                 removed_count += 1
 
             except Exception:
-                err = f"Error processing image {file_path}"
+                err = f"Error processing file {file_path}"
                 self.logger.exception(err)
                 failed_removals.append(file_path)
 
         self._log_removal_summary(removed_count, failed_removals)
 
-    def _get_media_files(self) -> list[Path]:
-        """Get all the image files in the download directory and its subdirectories.
+    def _get_files(self) -> list[Path]:
+        """Get all the media files in the download directory and its subdirectories.
 
         Returns:
-            list[Path]: A list of Path objects for the image files found.
+            list[Path]: A list of Path objects for the media files found.
 
         """
         media_files = [
@@ -125,7 +125,7 @@ class ImageManager:
             time_delta (timedelta): Time duration to compare against.
 
         Returns:
-            bool: True if the file is older than the time delta. False otherwise.
+            bool: True if the file is older than the time delta; False otherwise.
 
         """
         try:
@@ -151,7 +151,7 @@ class ImageManager:
             file_path (Path): Full path to the file.
 
         Returns:
-            bool: True if the file was removed successfully. False otherwise.
+            bool: True if the file was removed successfully; False otherwise.
 
         """
         try:
@@ -176,11 +176,11 @@ class ImageManager:
 
         """
         self.logger.info(
-            "Process completed, %d files removed in %d",
+            "Process completed, %d files removed out of %d",
             removed_count,
             len(self.media_files),
         )
         if failed_removals:
             for file in failed_removals:
                 self.logger.warning(file)
-            self.logger.warning("Failed to remove %d files:", len(failed_removals))
+            self.logger.warning("Failed to remove %d files", len(failed_removals))
