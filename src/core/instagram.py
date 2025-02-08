@@ -109,23 +109,16 @@ class Instagram:
             err = "No Firefox cookies.sqlite file found."
             raise SystemExit(err)
 
-        query = "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+        conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
-            with connect(f"file:{cookie_file}?immutable=1", uri=True) as conn:
-                try:
-                    rows = conn.execute(query).fetchall()
-                except OperationalError:
-                    rows = conn.execute(
-                        "SELECT name, value FROM moz_cookies "
-                        "WHERE host LIKE '%instagram.com'",
-                    ).fetchall()
-        except Exception:
-            self.logger.exception("Failed to connect to the Firefox cookies database.")
-
-        # Update cookie jar individually
-        for name, value in rows:
-            self.loader.context._session.cookies.set(name, value)
-
+            cookie_data = conn.execute(
+                "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'",
+            )
+        except OperationalError:
+            cookie_data = conn.execute(
+                "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
+            )
+        self.loader.context._session.cookies.update(cookie_data)  # type: ignore[reportPrivateUsage]
         username = self.loader.test_login()
         if not username:
             err = "Not logged in. Are you logged in successfully in Firefox?"
@@ -139,6 +132,9 @@ class Instagram:
 
         Args:
             username (str): The Instagram username to retrieve the profile from.
+
+        Returns:
+            Profile | None: The Instagram profile of the user, if found.
 
         """
         try:
