@@ -156,7 +156,6 @@ class FileManager:
         """
         try:
             file_path.unlink()
-            self.logger.debug("File removed: '%s'", file_path)
         except Exception:
             self.logger.exception("Error removing file '%s'", file_path)
             return False
