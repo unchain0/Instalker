@@ -77,9 +77,8 @@ class FileManager:
                 if not imghdr.what(file_path):
                     continue
 
-                img = Image.open(file_path)
-                width, height = img.size
-                img.close()
+                with Image.open(file_path) as img:
+                    width, height = img.size
 
                 if width >= min_size[0] and height >= min_size[1]:
                     continue

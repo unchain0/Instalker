@@ -80,7 +80,7 @@ class Instagram:
             try:
                 self.loader.download_profiles(
                     {profile},
-                    tagged=False,  # Unestable feature
+                    tagged=False,  # Unstable feature
                     stories=True,
                     reels=True,
                     latest_stamps=self.latest_stamps,
@@ -118,7 +118,9 @@ class Instagram:
             cookie_data = conn.execute(
                 "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'",
             )
-        self.loader.context._session.cookies.update(cookie_data)  # type: ignore[reportPrivateUsage]
+        self.loader.context._session.cookies.update(  # type: ignore[reportPrivateUsage]
+            dict(cookie_data),
+        )
         username = self.loader.test_login()
         if not username:
             err = "Not logged in. Are you logged in successfully in Firefox?"
