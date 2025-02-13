@@ -3,7 +3,6 @@ downloads/
 latest_stamps.ini
 users.json
 *.log*
-run.py
 
 ### VisualStudioCode template
 .vscode/*
