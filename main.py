@@ -11,6 +11,7 @@ from src.utils.logger import setup_logging
 def main() -> None:
     """Manage images and run Instagram highlights."""
     file_manager = FileManager()
+    file_manager.remove_small_files(min_size=(256, 256))
     file_manager.remove_old_files(cutoff_delta=timedelta(days=365))
 
     instagram = Instagram(highlights=False)
@@ -20,5 +21,4 @@ def main() -> None:
 if __name__ == "__main__":
     setup_logging()
     logger = logging.getLogger(__name__)
-    logger.info("Starting the application")
     main()
