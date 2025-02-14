@@ -3,6 +3,16 @@
 **Instalker** is a project that automates the download of Instagram profiles, leveraging
 the `instaloader` library for efficient and organized data collection.
 
+## ⚠️ Warnings
+
+Some considerations and recommendations when using this project.
+
+1. I don't recommend having more than 200 targets, due to Instagram's own limitations;
+2. Downloading highlights slows down downloads a LOT, especially if you have a large list of users;
+3. There's no problem using your main Instagram account, I've been using mine for a few months now and the most that's happened is a few warnings where I had to solve a captcha to unlock the account.
+    3.1 If you use a recent account (no followers, no following, etc...) it can be blocked quickly by Instagram, but after a while you can recover it.
+4. I don't recommend downloading `tagged` on a large list of users, making it impossible to use the bot for a few hours, after which it returns to normal.
+
 ## ✨ Main Features
 
 * Automated Downloads: Retrieve photos and videos from profiles with just a few steps.
@@ -11,10 +21,10 @@ the `instaloader` library for efficient and organized data collection.
 
 ## 🛠️ Requirements
 
-1. Mozilla Firefox
-2. An Instagram account
-3. Python 3 installed
-4. Poetry for dependency management
+1. [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/download/thanks/) installed
+2. An [Instagram account](https://www.instagram.com/)
+3. [Python 3](https://www.python.org/downloads/) installed
+4. [uv](https://docs.astral.sh/uv/#installation) for dependency management
 
 ## 🚀 Setup
 
@@ -37,8 +47,7 @@ the `instaloader` library for efficient and organized data collection.
 4. **Install dependencies:**
 
     ```bash
-    poetry shell
-    poetry install
+    uv sync
     ```
 
 ## 📝 Instructions
@@ -56,8 +65,16 @@ the `instaloader` library for efficient and organized data collection.
 
 2. **Run the script:**
 
+    Copy the example to the main file
+
     ```bash
-    python main.py
+    cp example.py main.py
     ```
 
-    * Follow the on-screen prompts to customize your download options.
+    Open the main file and change it according to your needs
+
+    Then run it
+
+    ```bash
+    uv run main.py
+    ```
