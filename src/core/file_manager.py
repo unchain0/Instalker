@@ -4,10 +4,12 @@ It includes functionality to remove old files and files smaller than
 specified dimensions.
 """
 
+import concurrent.futures
 import imghdr
 import logging
 import os
 from datetime import UTC, datetime, timedelta
+from functools import partial
 from pathlib import Path
 
 from PIL import Image
@@ -30,39 +32,46 @@ class FileManager:
         )
         self.media_files = self._get_files()
 
-    def remove_old_files(
-        self,
-        cutoff_delta: timedelta = timedelta(days=30),
-    ) -> None:
-        """Remove files in the directory that are older than the specified duration.
-
-        Args:
-            cutoff_delta (timedelta): The age limit for removing files.
-
-        """
+    def remove_old_files(self, cutoff_delta: timedelta = timedelta(days=30)) -> None:
+        """Remove files in the directory that are older than the specified duration."""
         self.logger.info(
             "Starting removal of media older than %s days",
             cutoff_delta.days,
         )
         removed_count = 0
         failed_removals: list[Path] = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = executor.map(
+                partial(self._process_old_file, cutoff_delta=cutoff_delta),
+                self.media_files,
+            )
 
-        for file_path in self.media_files:
-            if self._is_file_older_than(file_path, cutoff_delta):
-                if self._remove_file(file_path):
-                    removed_count += 1
-                else:
-                    failed_removals.append(file_path)
+        for status, file_path in results:
+            if status == "removed":
+                removed_count += 1
+            elif status == "failed":
+                failed_removals.append(file_path)
 
         self._log_removal_summary(removed_count, failed_removals)
 
+    def _process_old_file(
+        self,
+        file_path: Path,
+        cutoff_delta: timedelta,
+    ) -> tuple[str, Path]:
+        try:
+            if self._is_file_older_than(file_path, cutoff_delta):
+                if self._remove_file(file_path):
+                    return ("removed", file_path)
+                return ("failed", file_path)
+        except Exception:
+            self.logger.exception("Error processing file %s", file_path)
+            return ("failed", file_path)
+        else:
+            return ("skipped", file_path)
+
     def remove_small_files(self, min_size: tuple[int, int]) -> None:
-        """Remove files that are smaller than the specified dimensions.
-
-        Args:
-            min_size (tuple[int, int]): Minimum width and height in pixels.
-
-        """
+        """Remove files que são menores da dimensão fornecida, em paralelo."""
         self.logger.info(
             "Starting removal of files smaller than %dx%d",
             min_size[0],
@@ -72,29 +81,43 @@ class FileManager:
         removed_count = 0
         failed_removals: list[Path] = []
 
-        for file_path in files:
-            try:
-                if not imghdr.what(file_path):
-                    continue
+        with concurrent.futures.ThreadPoolExecutor() as executor:
 
-                with Image.open(file_path) as img:
-                    width, height = img.size
+            def process_file(file: Path) -> tuple[str, Path]:
+                return self._process_small_file(file, min_size)
 
-                if width >= min_size[0] and height >= min_size[1]:
-                    continue
+            results = executor.map(process_file, files)
 
-                if not self._remove_file(file_path):
-                    failed_removals.append(file_path)
-                    continue
-
+        for status, file_path in results:
+            if status == "removed":
                 removed_count += 1
-
-            except Exception:
-                err = f"Error processing file {file_path}"
-                self.logger.exception(err)
+            elif status == "failed":
                 failed_removals.append(file_path)
 
         self._log_removal_summary(removed_count, failed_removals)
+
+    def _process_small_file(
+        self,
+        file_path: Path,
+        min_size: tuple[int, int],
+    ) -> tuple[str, Path]:
+        try:
+            if not imghdr.what(file_path):
+                return ("skipped", file_path)
+
+            with Image.open(file_path) as img:
+                width, height = img.size
+
+            if width >= min_size[0] and height >= min_size[1]:
+                return ("skipped", file_path)
+
+            if not self._remove_file(file_path):
+                return ("failed", file_path)
+        except Exception:
+            self.logger.exception("Error processing file %s", file_path)
+            return ("failed", file_path)
+        else:
+            return ("removed", file_path)
 
     def _get_files(self) -> list[Path]:
         """Get all the media files in the download directory and its subdirectories.
