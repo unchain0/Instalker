@@ -139,7 +139,7 @@ class Instagram:
         try:
             profile = Profile.from_username(self.loader.context, username)
             self.logger.debug(
-                "Username: '%s', Followers: %d, Posts: %d, Private: %s",
+                "Username: '%s', Followers: %d, Posts: %d, Private: '%s'",
                 username,
                 profile.followers,
                 profile.mediacount,
