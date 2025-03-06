@@ -89,10 +89,13 @@ class FileManager:
             results = executor.map(process_file, files)
 
         for status, file_path in results:
-            if status == "removed":
-                removed_count += 1
-            elif status == "failed":
-                failed_removals.append(file_path)
+            match status:
+                case "removed":
+                    removed_count += 1
+                case "failed":
+                    failed_removals.append(file_path)
+                case _:
+                    pass
 
         self._log_removal_summary(removed_count, failed_removals)
 
