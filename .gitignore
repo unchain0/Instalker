@@ -1,7 +1,8 @@
 ### Project template
 downloads/
 latest_stamps.ini
-users.json
+!users.json
+*.json*
 *.log*
 main.py
 
