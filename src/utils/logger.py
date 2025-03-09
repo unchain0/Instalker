@@ -3,7 +3,7 @@
 import datetime
 import logging
 from logging import DEBUG, Formatter, StreamHandler, getLogger, root
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
 
 from src import LOG_DIRECTORY
@@ -23,7 +23,7 @@ def setup_logging() -> None:
 
     # Formatters
     file_formatter = Formatter(
-        fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+        fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(threadName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     console_formatter = Formatter(
@@ -32,10 +32,10 @@ def setup_logging() -> None:
     )
 
     # File handler with rotation
-    file_handler = RotatingFileHandler(
+    file_handler = TimedRotatingFileHandler(
         filename=log_file,
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=5,
+        when="midnight",
+        backupCount=14,  # Keep logs for 14 days
         encoding="utf-8",
     )
     file_handler.setFormatter(file_formatter)

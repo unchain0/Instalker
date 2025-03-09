@@ -9,7 +9,7 @@ from src.utils.logger import setup_logging
 
 
 def main() -> None:
-    """Manage images and run Instagram highlights."""
+    """Entry point for the program."""
     file_manager = FileManager()
     file_manager.remove_small_files(min_size=(256, 256))
     file_manager.remove_old_files(cutoff_delta=timedelta(days=365))

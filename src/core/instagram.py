@@ -38,8 +38,8 @@ class Instagram:
         self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
-            filename_pattern="{profile}_{date_utc}",
-            title_pattern="{profile}_{date_utc}",
+            filename_pattern="{target}_{date_utc}_UTC",
+            title_pattern="{target}_{date_utc}_UTC",
             quiet=True,
             save_metadata=False,
             post_metadata_txt_pattern="",
@@ -71,9 +71,6 @@ class Instagram:
             self.loader.dirname_pattern = str(DOWNLOAD_DIRECTORY / user)
 
             if profile.is_private and not profile.followed_by_viewer:
-                self.logger.debug(
-                    "Private profile - Only profile picture will be downloaded.",
-                )
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
@@ -142,10 +139,11 @@ class Instagram:
         try:
             profile = Profile.from_username(self.loader.context, username)
             self.logger.debug(
-                "Profile retrieved - Username: '%s', Followers: %d, Posts: %d",
+                "Username: '%s', Followers: %d, Posts: %d, Private: '%s'",
                 username,
                 profile.followers,
                 profile.mediacount,
+                profile.is_private,
             )
         except ProfileNotExistsException:
             self.logger.info("Profile '%s' not found", username)
