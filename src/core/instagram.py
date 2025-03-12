@@ -4,16 +4,18 @@ This module includes classes and methods to handle downloading Instagram profile
 managing sessions, and importing session cookies from Firefox.
 """
 
+import json
 import logging
 from glob import glob
 from os.path import expanduser
+from pathlib import Path
 from platform import system
 from sqlite3 import OperationalError, connect
 
 from instaloader import Instaloader, LatestStamps, Profile, ProfileNotExistsException
 from tqdm import tqdm
 
-from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, TARGET_USERS
+from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, SOURCE_DIRECTORY, TARGET_USERS
 
 
 class Instagram:
@@ -46,10 +48,19 @@ class Instagram:
             fatal_status_codes=[400],
         )
 
+        self.public_users = self._load_user_list("public_users.json")
+        self.private_users = self._load_user_list("private_users.json")
+        self.logger.info(
+            "Loaded %d public users and %d private users from existing files",
+            len(self.public_users),
+            len(self.private_users),
+        )
+
     def run(self) -> None:
         """Execute the main sequence of operations for the class."""
         self._import_session()
         self._download()
+        self._save_user_lists()
 
     def _download(self) -> None:
         """Download Instagram profiles and their content."""
@@ -68,36 +79,102 @@ class Instagram:
             if not profile:
                 continue
 
+            self._update_user_privacy_status(user, profile)
             self.loader.dirname_pattern = str(DOWNLOAD_DIRECTORY / user)
 
             if profile.is_private and not profile.followed_by_viewer:
                 self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                 continue
 
-            try:
-                self.loader.download_profiles(
-                    {profile},
-                    tagged=False,  # Unstable feature
-                    stories=True,
-                    reels=True,
-                    latest_stamps=self.latest_stamps,
-                )
-            except KeyError:
-                self.logger.exception(
-                    "Error downloading profile '%s'",
-                    profile.username,
-                )
-
-            if self.highlights:
-                try:
-                    self.loader.download_highlights(profile, fast_update=True)
-                except KeyError:
-                    self.logger.exception(
-                        "Error downloading highlights for profile '%s'",
-                        profile.username,
-                    )
+            self._download_profile_content(profile)
 
         self.logger.info("Download completed.")
+
+    def _update_user_privacy_status(self, user: str, profile: Profile) -> None:
+        """Update user's privacy status in our tracking lists."""
+        if profile.is_private:
+            if user in self.public_users:
+                self.logger.info("User '%s' changed from public to private", user)
+                self.public_users.remove(user)
+            if user not in self.private_users:
+                self.private_users.append(user)
+        else:
+            if user in self.private_users:
+                self.logger.info("User '%s' changed from private to public", user)
+                self.private_users.remove(user)
+            if user not in self.public_users:
+                self.public_users.append(user)
+
+    def _download_profile_content(self, profile: Profile) -> None:
+        """Download profile content including posts, stories, and highlights."""
+        try:
+            self.loader.download_profiles(
+                {profile},
+                tagged=False,  # Unstable feature
+                stories=True,
+                reels=True,
+                latest_stamps=self.latest_stamps,
+            )
+        except KeyError:
+            self.logger.exception(
+                "Error downloading profile '%s'",
+                profile.username,
+            )
+
+        if self.highlights:
+            self._download_profile_highlights(profile)
+
+    def _download_profile_highlights(self, profile: Profile) -> None:
+        """Download profile highlights if enabled."""
+        try:
+            self.loader.download_highlights(profile, fast_update=True)
+        except KeyError:
+            self.logger.exception(
+                "Error downloading highlights for profile '%s'",
+                profile.username,
+            )
+
+    def _load_user_list(self, filename: str) -> list[str]:
+        """Load user list from JSON file.
+
+        Args:
+            filename: Name of the JSON file to load
+
+        Returns:
+            List of usernames from the file or empty list if file doesn't exist
+
+        """
+        file_path = SOURCE_DIRECTORY / "target" / filename
+        if not file_path.exists():
+            return []
+
+        try:
+            with Path.open(file_path, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except (OSError, json.JSONDecodeError) as e:
+            self.logger.warning("Error loading %s: %s", filename, e)
+            return []
+
+    def _save_user_lists(self) -> None:
+        """Save the public and private user lists to JSON files."""
+        target_dir = SOURCE_DIRECTORY / "target"
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        private_path = target_dir / "private_users.json"
+        with Path.open(private_path, "w", encoding="utf-8") as file:
+            json.dump(sorted(self.private_users), file, indent=4)
+
+        public_path = target_dir / "public_users.json"
+        with Path.open(public_path, "w", encoding="utf-8") as file:
+            json.dump(sorted(self.public_users), file, indent=4)
+
+        self.logger.info(
+            "Saved %d private users to %s and %d public users to %s",
+            len(self.private_users),
+            private_path,
+            len(self.public_users),
+            public_path,
+        )
 
     def _import_session(self) -> None:
         """Import the session cookies from Firefox's cookies.sqlite for Instagram."""
