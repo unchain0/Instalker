@@ -12,7 +12,13 @@ from pathlib import Path
 from platform import system
 from sqlite3 import OperationalError, connect
 
-from instaloader import Instaloader, LatestStamps, Profile, ProfileNotExistsException
+from instaloader import (
+    ConnectionException,
+    Instaloader,
+    LatestStamps,
+    Profile,
+    ProfileNotExistsException,
+)
 from tqdm import tqdm
 
 from src import DOWNLOAD_DIRECTORY, LATEST_STAMPS, SOURCE_DIRECTORY, TARGET_USERS
@@ -128,7 +134,7 @@ class Instagram:
         """Download profile highlights if enabled."""
         try:
             self.loader.download_highlights(profile, fast_update=True)
-        except KeyError:
+        except (KeyError, ConnectionException):
             self.logger.exception(
                 "Error downloading highlights for profile '%s'",
                 profile.username,
