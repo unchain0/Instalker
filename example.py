@@ -1,6 +1,5 @@
 """Module for managing Instagram highlights and image management."""
 
-import logging
 from datetime import timedelta
 
 from src.core.file_manager import FileManager
@@ -20,5 +19,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     setup_logging()
-    logger = logging.getLogger(__name__)
     main()
