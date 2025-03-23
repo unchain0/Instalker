@@ -5,7 +5,6 @@ specified dimensions.
 """
 
 import concurrent.futures
-import imghdr
 import logging
 import os
 from datetime import UTC, datetime, timedelta
@@ -21,6 +20,7 @@ class FileManager:
     """Manages files in a directory, retrieval and removal based on age."""
 
     SUPPORTED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".mpeg", ".mpg", ".mp4", ".webp")
+    LARGE_FILE_THRESHOLD = 100000
 
     def __init__(self) -> None:
         """Initialize the class with the download directory."""
@@ -70,57 +70,113 @@ class FileManager:
         else:
             return ("skipped", file_path)
 
-    def remove_small_files(self, min_size: tuple[int, int]) -> None:
-        """Remove files que são menores da dimensão fornecida, em paralelo."""
+    def remove_small_files(
+        self,
+        min_size: tuple[int, int],
+        max_workers: int = 16,
+    ) -> None:
+        """Remove files smaller than the provided dimensions in parallel.
+
+        Args:
+            min_size: Minimum (width, height) to keep files
+            max_workers: Number of parallel workers (default: 16)
+
+        """
         self.logger.info(
             "Starting removal of files smaller than %dx%d",
             min_size[0],
             min_size[1],
         )
-        files = self._get_files()
+
+        image_files = self._get_image_files()
+
+        if not image_files:
+            self.logger.info("No image files found to process")
+            return
+
+        self.logger.info("Processing %d image files", len(image_files))
+
         removed_count = 0
         failed_removals: list[Path] = []
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            batch_size = 500
+            total_batches = (len(image_files) + batch_size - 1) // batch_size
 
-            def process_file(file: Path) -> tuple[str, Path]:
-                return self._process_small_file(file, min_size)
+            for batch_num in range(total_batches):
+                start_idx = batch_num * batch_size
+                end_idx = min(start_idx + batch_size, len(image_files))
+                batch = image_files[start_idx:end_idx]
 
-            results = executor.map(process_file, files)
+                self.logger.debug(
+                    "Processing batch %d/%d (%d files)",
+                    batch_num + 1,
+                    total_batches,
+                    len(batch),
+                )
 
-        for status, file_path in results:
-            match status:
-                case "removed":
-                    removed_count += 1
-                case "failed":
-                    failed_removals.append(file_path)
-                case _:
-                    pass
+                futures = [
+                    executor.submit(self._process_small_file, file, min_size)
+                    for file in batch
+                ]
+
+                for future in concurrent.futures.as_completed(futures):
+                    status, file_path = future.result()
+                    if status == "removed":
+                        removed_count += 1
+                    elif status == "failed":
+                        failed_removals.append(file_path)
 
         self._log_removal_summary(removed_count, failed_removals)
+
+    def _get_image_files(self) -> list[Path]:
+        """Get only image files from the media files.
+
+        Returns:
+            list[Path]: A list of image file paths
+
+        """
+        image_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        return [
+            file for file in self.media_files if file.suffix.lower() in image_extensions
+        ]
 
     def _process_small_file(
         self,
         file_path: Path,
         min_size: tuple[int, int],
     ) -> tuple[str, Path]:
+        """Process a file to check if it should be removed based on dimensions.
+
+        Args:
+            file_path: Path to the image file
+            min_size: Minimum (width, height) dimensions
+
+        Returns:
+            tuple[str, Path]: Status and file path
+
+        """
         try:
-            if not imghdr.what(file_path):
+            file_size = file_path.stat().st_size
+            if file_size > self.LARGE_FILE_THRESHOLD:
                 return ("skipped", file_path)
 
-            with Image.open(file_path) as img:
-                width, height = img.size
+            try:
+                with Image.open(file_path) as img:
+                    width, height = img.size
+            except OSError:
+                return ("skipped", file_path)
 
             if width >= min_size[0] and height >= min_size[1]:
                 return ("skipped", file_path)
 
-            if not self._remove_file(file_path):
-                return ("failed", file_path)
+            if self._remove_file(file_path):
+                return ("removed", file_path)
         except Exception:
             self.logger.exception("Error processing file %s", file_path)
             return ("failed", file_path)
         else:
-            return ("removed", file_path)
+            return ("failed", file_path)
 
     def _get_files(self) -> list[Path]:
         """Get all the media files in the download directory and its subdirectories.
@@ -166,8 +222,7 @@ class FileManager:
                 file_path,
             )
             return False
-        else:
-            return is_older
+        return is_older
 
     def _remove_file(self, file_path: Path) -> bool:
         """Remove a specific file.
