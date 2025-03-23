@@ -3,25 +3,24 @@ name = "instalker"
 version = "0.1.0"
 description = "Download profiles on Instagram"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
 
 [dependency-groups]
 dev = [
-	"pyright>=1.1.393",
-	"ruff>=0.9.4",
-	"types-pillow>=10.2.0.20240822",
-	"types-tqdm>=4.67.0.20241221",
+    "ruff>=0.9.4",
+    "types-pillow>=10.2.0.20240822",
+    "types-tqdm>=4.67.0.20241221",
 ]
 
 [tool.ruff]
 line-length = 88
 indent-width = 4
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["SLF001", "PTH111", "PTH207", "S605", "D203", "D213"]
+ignore = ["SLF001", "PTH111", "PTH207", "S605", "D203", "D213", "EXE002"]
 per-file-ignores = { "main.py" = ["ERA001"], "__init__.py" = ["D104"] }
 
 [tool.pyright]
