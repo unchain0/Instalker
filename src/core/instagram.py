@@ -46,12 +46,14 @@ class Instagram:
         self.latest_stamps = LatestStamps(LATEST_STAMPS)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.loader = Instaloader(
-            filename_pattern="{target}_{date_utc}_UTC",
-            title_pattern="{target}_{date_utc}_UTC",
+            filename_pattern="{profile}_{date_utc}_UTC",
+            title_pattern="{profile}_{date_utc}_UTC",
             quiet=True,
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400],
+            max_connection_attempts=10,
+            request_timeout=100,
         )
 
         self.public_users = self._load_user_list("public_users.json")
@@ -121,7 +123,7 @@ class Instagram:
                 reels=True,
                 latest_stamps=self.latest_stamps,
             )
-        except KeyError:
+        except (KeyError, PermissionError):
             self.logger.exception(
                 "Error downloading profile '%s'",
                 profile.username,
@@ -134,7 +136,7 @@ class Instagram:
         """Download profile highlights if enabled."""
         try:
             self.loader.download_highlights(profile, fast_update=True)
-        except (KeyError, ConnectionException):
+        except (KeyError, ConnectionException, AssertionError):
             self.logger.exception(
                 "Error downloading highlights for profile '%s'",
                 profile.username,
@@ -177,9 +179,9 @@ class Instagram:
         self.logger.info(
             "Saved %d private users to %s and %d public users to %s",
             len(self.private_users),
-            private_path,
+            private_path.name,
             len(self.public_users),
-            public_path,
+            public_path.name,
         )
 
     def _import_session(self) -> None:
