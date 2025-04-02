@@ -8,23 +8,8 @@ dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
 
 [dependency-groups]
 dev = [
+    "pylint>=3.3.6",
     "ruff>=0.9.4",
     "types-pillow>=10.2.0.20240822",
     "types-tqdm>=4.67.0.20241221",
 ]
-
-[tool.ruff]
-line-length = 88
-indent-width = 4
-target-version = "py313"
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["SLF001", "PTH111", "PTH207", "S605", "D203", "D213", "EXE002"]
-per-file-ignores = { "main.py" = ["ERA001"], "__init__.py" = ["D104"] }
-
-[tool.pyright]
-typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
-reportUnknownMemberType = "none"
-reportConstantRedefinition = "none"
