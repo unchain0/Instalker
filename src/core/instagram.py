@@ -7,8 +7,6 @@ managing sessions, and importing session cookies from Firefox.
 import json
 import logging
 from contextlib import contextmanager
-from glob import glob
-from os.path import expanduser
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
@@ -25,11 +23,9 @@ from instaloader import (
 from tqdm import tqdm
 
 from src.config.settings import (
-    DEFAULT_TIMEOUT,
     DOWNLOAD_DIRECTORY,
     LATEST_STAMPS,
-    MAX_CONNECTION_ATTEMPTS,
-    SOURCE_DIRECTORY,
+    RESOURCES_DIRECTORY,
     TARGET_USERS,
 )
 
@@ -62,8 +58,6 @@ class Instagram:
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400, 429],
-            max_connection_attempts=MAX_CONNECTION_ATTEMPTS,
-            request_timeout=DEFAULT_TIMEOUT,
         )
 
         self.public_users = self._load_user_list("public_users.json")
@@ -78,8 +72,7 @@ class Instagram:
         """Execute the main sequence of operations for the class."""
         if not self.users:
             self.logger.warning(
-                "No target users specified. "
-                + "Please add users to the configuration.",
+                "No target users specified. Please add users to the configuration.",
             )
             return
 
@@ -97,7 +90,7 @@ class Instagram:
             "Starting download process for %d users", len(self.users)
         )
         progress_bar = tqdm(
-            sorted(self.users),  # Sort for consistent order
+            sorted(self.users),
             desc="Downloading profiles",
             unit="profile",
         )
@@ -183,7 +176,9 @@ class Instagram:
             profile: Instagram profile to download highlights from
         """
         try:
-            self.loader.download_highlights(profile, fast_update=True)
+            self.loader.download_highlights(
+                profile, fast_update=True, filename_target=None
+            )
         except (KeyError, ConnectionException, AssertionError) as e:
             self.logger.error(
                 "Error downloading highlights for profile '%s': %s",
@@ -200,7 +195,7 @@ class Instagram:
         Returns:
             List of usernames from the file or empty list if file doesn't exist
         """
-        file_path = SOURCE_DIRECTORY / "target" / filename
+        file_path = RESOURCES_DIRECTORY / "target" / filename
         if not file_path.exists():
             return []
 
@@ -213,7 +208,7 @@ class Instagram:
 
     def _save_user_lists(self) -> None:
         """Save the public and private user lists to JSON files."""
-        target_dir = SOURCE_DIRECTORY / "target"
+        target_dir = RESOURCES_DIRECTORY / "target"
         target_dir.mkdir(parents=True, exist_ok=True)
 
         private_path = target_dir / "private_users.json"
@@ -256,7 +251,7 @@ class Instagram:
                     + "FROM moz_cookies "
                     + "WHERE host LIKE '%instagram.com'"
                 )
-            self.loader.context.update_cookies(dict(cookie_data))
+            self.loader.context.update_cookies(dict(cookie_data))  # type: ignore[reportUnknownMemberType]
 
         username = self.loader.test_login()
         if not username:
@@ -319,17 +314,16 @@ class Instagram:
         Returns:
             The path to the Firefox cookies file or None if not found
         """
-        default_cookie_file = {
-            "Windows": (
-                "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/"
-                + "cookies.sqlite"
-            ),
-            "Darwin": (
-                "~/Library/Application Support/Firefox/Profiles/*/"
-                + "cookies.sqlite"
-            ),
-            "Linux": "~/.mozilla/firefox/*/cookies.sqlite",
-        }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
+        default_patterns = {
+            "Windows": "AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
+            "Darwin": "Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
+            "Linux": ".mozilla/firefox/*/cookies.sqlite",
+        }
 
-        cookie_files = glob(expanduser(default_cookie_file))
-        return cookie_files[0] if cookie_files else None
+        pattern = default_patterns.get(
+            system(), ".mozilla/firefox/*/cookies.sqlite"
+        )
+
+        cookie_paths = list(Path.home().glob(pattern))
+
+        return str(cookie_paths[0]) if cookie_paths else None
