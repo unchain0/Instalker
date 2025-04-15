@@ -8,8 +8,9 @@ dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.2.0",
     "pylint>=3.3.6",
-    "ruff>=0.9.4",
+    "ruff>=0.11.5",
     "types-pillow>=10.2.0.20240822",
     "types-tqdm>=4.67.0.20241221",
 ]
