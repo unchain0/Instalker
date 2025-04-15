@@ -19,17 +19,12 @@ def setup_logging(log_level: Optional[int] = None) -> logging.Logger:
     Returns:
         The configured root logger
     """
-    # Reset existing handlers
     for handler in root.handlers[:]:
         root.removeHandler(handler)
 
-    # Log file path with timestamp
-    timestamp = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
-        "%Y-%m-%d"
-    )
+    timestamp = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d")
     log_file = LOG_DIRECTORY / f"instalker_{timestamp}.log"
 
-    # Formatters
     file_formatter = Formatter(
         fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(threadName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -39,28 +34,24 @@ def setup_logging(log_level: Optional[int] = None) -> logging.Logger:
         datefmt="%H:%M:%S",
     )
 
-    # File handler with rotation
     file_handler = TimedRotatingFileHandler(
         filename=log_file,
         when="midnight",
-        backupCount=14,  # Keep logs for 14 days
+        backupCount=14,
         encoding="utf-8",
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(DEBUG)
 
-    # Console handler
     console_handler = StreamHandler(stdout)
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.INFO)
 
-    # Root logger configuration
     root_logger = getLogger()
     root_logger.setLevel(log_level or DEBUG)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
-    # Suppress external library logs using fully-qualified logging levels
     getLogger("urllib3").setLevel(logging.WARNING)
     getLogger("instaloader").setLevel(logging.INFO)
     getLogger("PIL").setLevel(logging.INFO)

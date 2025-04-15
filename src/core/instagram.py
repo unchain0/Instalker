@@ -86,9 +86,7 @@ class Instagram:
 
     def _download(self) -> None:
         """Download Instagram profiles and their content."""
-        self.logger.info(
-            "Starting download process for %d users", len(self.users)
-        )
+        self.logger.info("Starting download process for %d users", len(self.users))
         progress_bar = tqdm(
             sorted(self.users),
             desc="Downloading profiles",
@@ -107,9 +105,7 @@ class Instagram:
                 self.loader.dirname_pattern = str(DOWNLOAD_DIRECTORY / user)
 
                 if profile.is_private and not profile.followed_by_viewer:
-                    self.loader.download_profilepic_if_new(
-                        profile, self.latest_stamps
-                    )
+                    self.loader.download_profilepic_if_new(profile, self.latest_stamps)
                     continue
 
                 self._download_profile_content(profile)
@@ -320,9 +316,7 @@ class Instagram:
             "Linux": ".mozilla/firefox/*/cookies.sqlite",
         }
 
-        pattern = default_patterns.get(
-            system(), ".mozilla/firefox/*/cookies.sqlite"
-        )
+        pattern = default_patterns.get(system(), ".mozilla/firefox/*/cookies.sqlite")
 
         cookie_paths = list(Path.home().glob(pattern))
 
