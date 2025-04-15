@@ -55,8 +55,8 @@ class FileManager:
     def remove_old_files(self, cutoff_delta: timedelta = timedelta(days=30)) -> None:
         """Remove files older than the specified duration.
 
-        Args:
-            cutoff_delta: Time duration threshold for file age
+        :param cutoff_delta: Time duration threshold for file age.
+        :type cutoff_delta: timedelta
         """
         self.logger.info(
             "Starting removal of media older than %s days",
@@ -89,12 +89,12 @@ class FileManager:
     ) -> FileResult:
         """Process a file to check if it should be removed based on age.
 
-        Args:
-            file_path: Path to the file to check
-            cutoff_delta: Time duration threshold
-
-        Returns:
-            FileResult: Status of the operation and the file path
+        :param file_path: Path to the file to check.
+        :type file_path: Path
+        :param cutoff_delta: Time duration threshold.
+        :type cutoff_delta: timedelta
+        :return: Status of the operation and the file path.
+        :rtype: FileResult
         """
         try:
             if self._is_file_older_than(file_path, cutoff_delta):
@@ -113,9 +113,10 @@ class FileManager:
     ) -> None:
         """Remove image files smaller than the provided dimensions in parallel.
 
-        Args:
-            min_size: Minimum (width, height) to keep files
-            max_workers: Number of parallel workers
+        :param min_size: Minimum (width, height) to keep files.
+        :type min_size: tuple[int, int]
+        :param max_workers: Number of parallel workers.
+        :type max_workers: int
         """
         self.logger.info(
             "Starting removal of files smaller than %dx%d",
@@ -148,13 +149,11 @@ class FileManager:
                     len(batch),
                 )
 
-                # Submit all tasks at once for this batch
                 futures = [
                     executor.submit(self._process_small_file, file, min_size)
                     for file in batch
                 ]
 
-                # Process results as they complete
                 for future in concurrent.futures.as_completed(futures):
                     status, file_path = future.result()
                     if status == "removed":
@@ -167,10 +166,9 @@ class FileManager:
     def _get_image_files(self) -> list[Path]:
         """Get only image files from the media files.
 
-        Returns:
-            list[Path]: A list of image file paths
+        :return: A list of image file paths.
+        :rtype: list[Path]
         """
-        # Use a class constant instead of local variable
         return [
             file
             for file in self.media_files
@@ -184,12 +182,12 @@ class FileManager:
     ) -> FileResult:
         """Process a file to check if it should be removed based on dimensions.
 
-        Args:
-            file_path: Path to the image file
-            min_size: Minimum (width, height) dimensions
-
-        Returns:
-            FileResult: Status of the operation and the file path
+        :param file_path: Path to the image file.
+        :type file_path: Path
+        :param min_size: Minimum (width, height) dimensions.
+        :type min_size: tuple[int, int]
+        :return: Status of the operation and the file path.
+        :rtype: FileResult
         """
         try:
             # Check file size first as it's faster than opening the image
@@ -218,8 +216,8 @@ class FileManager:
     def _get_files(self) -> list[Path]:
         """Get all media files in the download directory and its subdirectories.
 
-        Returns:
-            list[Path]: List of Path objects for the media files found.
+        :return: List of Path objects for the media files found.
+        :rtype: list[Path]
         """
         media_files = []
         problematic_files = []
@@ -259,12 +257,12 @@ class FileManager:
     ) -> bool:
         """Check if a file is older than the specified time.
 
-        Args:
-            file_path: Path to the file
-            time_delta: Time duration to compare against
-
-        Returns:
-            bool: True if the file is older than the time delta
+        :param file_path: Path to the file.
+        :type file_path: Path
+        :param time_delta: Time duration to compare against.
+        :type time_delta: timedelta
+        :return: True if the file is older than the time delta.
+        :rtype: bool
         """
         try:
             cutoff_time = datetime.now(tz=UTC) - time_delta
@@ -280,7 +278,6 @@ class FileManager:
                 file_mod_time = datetime.fromtimestamp(file_stat.st_mtime, tz=UTC)
                 return file_mod_time < cutoff_time
             except OSError:
-                # Try to use os.stat directly as an alternative
                 try:
                     file_stat = os.stat(str(file_path))
                     if file_stat.st_mtime <= 0:
@@ -309,11 +306,10 @@ class FileManager:
     def _remove_file(self, file_path: Path) -> bool:
         """Remove a specific file safely.
 
-        Args:
-            file_path: Full path to the file
-
-        Returns:
-            bool: True if the file was removed successfully; False otherwise
+        :param file_path: Full path to the file.
+        :type file_path: Path
+        :return: True if the file was removed successfully; False otherwise.
+        :rtype: bool
         """
         if not file_path.exists():
             self.logger.warning("File no longer exists: %s", file_path)
@@ -340,10 +336,10 @@ class FileManager:
     ) -> None:
         """Record a summary of the removals carried out.
 
-        Args:
-            removed_count (int): Number of files successfully removed.
-            failed_removals (list[Path]): List of files that failed to be removed.
-
+        :param removed_count: Number of files successfully removed.
+        :type removed_count: int
+        :param failed_removals: List of files that failed to be removed.
+        :type failed_removals: list[Path]
         """
         self.logger.info(
             "Process completed, %d files removed out of %d",
@@ -358,8 +354,8 @@ class FileManager:
     def get_storage_stats(self) -> dict:
         """Get statistics about the files in the download directory.
 
-        Returns:
-            dict: Dictionary with statistics like total size, file count, etc.
+        :return: Dictionary with statistics like total size, file count, etc.
+        :rtype: dict
         """
         total_size = 0
         count_by_extension = {}
@@ -389,9 +385,6 @@ class FileManager:
         """Refresh the media files list.
 
         Call this method when files have been added or removed externally.
-
-        Returns:
-            None
         """
         self.logger.info("Refreshing media files list")
         self.media_files = self._get_files()

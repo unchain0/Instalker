@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import Iterator, List, Optional, Set
+from typing import Iterator
 
 from instaloader import (
     ConnectionException,
@@ -35,15 +35,16 @@ class Instagram:
 
     def __init__(
         self,
-        users: Optional[Set[str]] = None,
+        users: set[str] | None = None,
         *,
         highlights: bool = False,
     ) -> None:
         """Initialize the class with default settings and configurations.
 
-        Args:
-            users: The set of usernames to download content from
-            highlights: Whether to download highlights or not
+        :param users: The set of usernames to download content from.
+        :type users: Optional[Set[str]]
+        :param highlights: Whether to download highlights or not.
+        :type highlights: bool
         """
         self.download_directory = DOWNLOAD_DIRECTORY
         self.users = users if users is not None else TARGET_USERS
@@ -122,9 +123,10 @@ class Instagram:
     def _update_user_privacy_status(self, user: str, profile: Profile) -> None:
         """Update user's privacy status in our tracking lists.
 
-        Args:
-            user: Instagram username
-            profile: Instagram profile object
+        :param user: Instagram username.
+        :type user: str
+        :param profile: Instagram profile object.
+        :type profile: Profile
         """
         was_public = user in self.public_users
         was_private = user in self.private_users
@@ -145,8 +147,8 @@ class Instagram:
     def _download_profile_content(self, profile: Profile) -> None:
         """Download profile content including posts, stories, and highlights.
 
-        Args:
-            profile: Instagram profile to download
+        :param profile: Instagram profile to download.
+        :type profile: Profile
         """
         try:
             self.loader.download_profiles(
@@ -168,8 +170,8 @@ class Instagram:
     def _download_profile_highlights(self, profile: Profile) -> None:
         """Download profile highlights if enabled.
 
-        Args:
-            profile: Instagram profile to download highlights from
+        :param profile: Instagram profile to download highlights from.
+        :type profile: Profile
         """
         try:
             self.loader.download_highlights(
@@ -182,14 +184,13 @@ class Instagram:
                 e,
             )
 
-    def _load_user_list(self, filename: str) -> List[str]:
+    def _load_user_list(self, filename: str) -> list[str]:
         """Load user list from JSON file.
 
-        Args:
-            filename: Name of the JSON file to load
-
-        Returns:
-            List of usernames from the file or empty list if file doesn't exist
+        :param filename: Name of the JSON file to load.
+        :type filename: str
+        :return: List of usernames from the file or empty list if file doesn't exist.
+        :rtype: List[str]
         """
         file_path = RESOURCES_DIRECTORY / "target" / filename
         if not file_path.exists():
@@ -226,8 +227,7 @@ class Instagram:
     def _import_session(self) -> None:
         """Import the session cookies from Firefox's cookies for Instagram.
 
-        Raises:
-            SystemExit: If no cookie file is found or login fails
+        :raises SystemExit: If no cookie file is found or login fails.
         """
         cookie_file = self._get_cookie_file()
         if not cookie_file:
@@ -261,11 +261,10 @@ class Instagram:
     def _open_cookie_db(self, cookie_file: str) -> Iterator[Connection]:
         """Open the Firefox cookie database with proper handling.
 
-        Args:
-            cookie_file: Path to Firefox cookies.sqlite file
-
-        Yields:
-            SQLite connection to the cookie database
+        :param cookie_file: Path to Firefox cookies.sqlite file.
+        :type cookie_file: str
+        :yield: SQLite connection to the cookie database.
+        :rtype: Iterator[Connection]
         """
         conn = connect(f"file:{cookie_file}?immutable=1", uri=True)
         try:
@@ -273,14 +272,13 @@ class Instagram:
         finally:
             conn.close()
 
-    def _get_instagram_profile(self, username: str) -> Optional[Profile]:
+    def _get_instagram_profile(self, username: str) -> Profile | None:
         """Retrieve the Instagram profile of a given user.
 
-        Args:
-            username: The Instagram username to retrieve the profile from
-
-        Returns:
-            The Instagram profile of the user, if found
+        :param username: The Instagram username to retrieve the profile from.
+        :type username: str
+        :return: The Instagram profile of the user, if found.
+        :rtype: Optional[Profile]
         """
         try:
             profile = Profile.from_username(self.loader.context, username)
@@ -304,11 +302,11 @@ class Instagram:
             )
 
     @staticmethod
-    def _get_cookie_file() -> Optional[str]:
+    def _get_cookie_file() -> str | None:
         """Retrieve the path to the Firefox cookies file based on the system.
 
-        Returns:
-            The path to the Firefox cookies file or None if not found
+        :return: The path to the Firefox cookies file or None if not found.
+        :rtype: str | None
         """
         default_patterns = {
             "Windows": "AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",

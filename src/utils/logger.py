@@ -13,11 +13,10 @@ from src import LOG_DIRECTORY
 def setup_logging(log_level: Optional[int] = None) -> logging.Logger:
     """Configure application logging with rotation and formatting.
 
-    Args:
-        log_level: Optional custom log level (defaults to DEBUG if None)
-
-    Returns:
-        The configured root logger
+    :param log_level: Optional custom log level (defaults to DEBUG if None).
+    :type log_level: Optional[int]
+    :return: The configured root logger.
+    :rtype: logging.Logger
     """
     for handler in root.handlers[:]:
         root.removeHandler(handler)

@@ -24,8 +24,8 @@ BATCH_SIZE: int = 500
 def load_target_users() -> set[str]:
     """Load target users from the configuration file.
 
-    Returns:
-        Set of Instagram usernames to target
+    :return: Set of Instagram usernames to target.
+    :rtype: set[str]
     """
     target_file = RESOURCES_DIRECTORY / "target" / "users.json"
 
