@@ -10,7 +10,7 @@ import os
 from datetime import UTC, datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Literal
+from typing import ClassVar, Literal
 
 from PIL import Image
 
@@ -30,7 +30,7 @@ class FileManager:
     - Removing image files that don't meet minimum dimension requirements
     """
 
-    SUPPORTED_EXTENSIONS = {
+    SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {
         ".jpg",
         ".jpeg",
         ".png",
@@ -39,8 +39,8 @@ class FileManager:
         ".mp4",
         ".webp",
     }
-    IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-    LARGE_FILE_THRESHOLD = 100_000
+    IMAGE_EXTENSIONS: ClassVar[set[str]] = {".jpg", ".jpeg", ".png", ".webp"}
+    LARGE_FILE_THRESHOLD: ClassVar[int] = 100_000
 
     def __init__(self) -> None:
         """Initialize the FileManager with the download directory."""
@@ -358,7 +358,7 @@ class FileManager:
         :rtype: dict
         """
         total_size = 0
-        count_by_extension = {}
+        count_by_extension: dict[str, int] = {}
 
         for file_path in self.media_files:
             try:
