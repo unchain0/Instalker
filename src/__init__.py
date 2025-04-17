@@ -1,6 +1,6 @@
 """Initialize settings for the Instalker application."""
 
-from .config.settings import (
+from src.config.settings import (
     DOWNLOAD_DIRECTORY,
     LATEST_STAMPS,
     LOG_DIRECTORY,
