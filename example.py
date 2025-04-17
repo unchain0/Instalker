@@ -8,8 +8,7 @@ from src.utils.logger import setup_logging
 
 
 def main() -> None:
-    """
-    Entry point for the application.
+    """Entry point for the application.
 
     This function performs the following operations:
     1. Initializes a FileManager and uses it to:
