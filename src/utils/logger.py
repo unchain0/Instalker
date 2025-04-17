@@ -1,16 +1,13 @@
-"""Module that sets up logging for the Instalker application."""
-
 import datetime
 import logging
 from logging import DEBUG, Formatter, StreamHandler, getLogger, root
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
-from typing import Optional
 
-from src import LOG_DIRECTORY
+from src.config.settings import LOG_DIRECTORY
 
 
-def setup_logging(log_level: Optional[int] = None) -> logging.Logger:
+def setup_logging(log_level: int | None = None) -> logging.Logger:
     """Configure application logging with rotation and formatting.
 
     :param log_level: Optional custom log level (defaults to DEBUG if None).
@@ -21,7 +18,7 @@ def setup_logging(log_level: Optional[int] = None) -> logging.Logger:
     for handler in root.handlers[:]:
         root.removeHandler(handler)
 
-    timestamp = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+    timestamp = datetime.datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d")
     log_file = LOG_DIRECTORY / f"instalker_{timestamp}.log"
 
     file_formatter = Formatter(
