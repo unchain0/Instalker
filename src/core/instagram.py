@@ -6,11 +6,11 @@ managing sessions, and importing session cookies from Firefox.
 
 import json
 import logging
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import Iterator
 
 from instaloader import (
     ConnectionException,
@@ -255,7 +255,7 @@ class Instagram:
             raise SystemExit(err)
 
         self.logger.info("Imported session cookie for '%s'", username)
-        self.loader.context.username = username
+        self.loader.context.username = username  # type: ignore[assignment]
 
     @contextmanager
     def _open_cookie_db(self, cookie_file: str) -> Iterator[Connection]:
@@ -300,6 +300,7 @@ class Instagram:
             self.logger.exception(
                 "Instaloader error retrieving profile '%s': %s", username, e
             )
+        return None
 
     @staticmethod
     def _get_cookie_file() -> str | None:
