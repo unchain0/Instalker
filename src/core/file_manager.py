@@ -351,7 +351,7 @@ class FileManager:
                 self.logger.warning(file)
             self.logger.warning("Failed to remove %d files", len(failed_removals))
 
-    def get_storage_stats(self) -> dict:
+    def get_storage_stats(self) -> dict[str, int | float | dict[str, int]]:
         """Get statistics about the files in the download directory.
 
         :return: Dictionary with statistics like total size, file count, etc.
