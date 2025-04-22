@@ -18,7 +18,6 @@ def main() -> None:
     3. Executes the Instagram client
     """
     file_manager = FileManager()
-    file_manager.remove_small_images(min_size=(256, 256))
     file_manager.remove_old_files(cutoff_delta=timedelta(days=365))
 
     instagram = Instagram(highlights=False, target_users="all")
