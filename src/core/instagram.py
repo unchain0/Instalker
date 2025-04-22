@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
+from typing import Literal, cast
 
 from instaloader import (
     ConnectionException,
@@ -38,6 +39,7 @@ class Instagram:
         users: set[str] | None = None,
         *,
         highlights: bool = False,
+        target_users: Literal["all", "public", "private"] = "all",
     ) -> None:
         """Initialize the class with default settings and configurations.
 
@@ -45,17 +47,25 @@ class Instagram:
         :type users: Optional[Set[str]]
         :param highlights: Whether to download highlights or not.
         :type highlights: bool
+        :param target_users: The type of users to download content from.
+        :type target_users: Literal["all", "public", "private"]
         """
-        self.download_directory = DOWNLOAD_DIRECTORY
-        self.users = users if users is not None else TARGET_USERS
+        match target_users:
+            case "all":
+                self.users = users if users is not None else TARGET_USERS
+            case "public":
+                self.users = set(self._load_user_list("public_users.json"))
+            case "private":
+                self.users = set(self._load_user_list("private_users.json"))
+
         self.highlights = highlights
-        self.latest_stamps = LatestStamps(LATEST_STAMPS)
+        self.latest_stamps = LatestStamps(LATEST_STAMPS)  # type: ignore[no-untyped-call]
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.loader = Instaloader(
+            quiet=True,
             filename_pattern="{profile}_{date_utc}_UTC",
             title_pattern="{profile}_{date_utc}_UTC",
-            quiet=True,
             save_metadata=False,
             post_metadata_txt_pattern="",
             fatal_status_codes=[400, 429],
@@ -198,7 +208,7 @@ class Instagram:
 
         try:
             with Path.open(file_path, "r", encoding="utf-8") as file:
-                return json.load(file)
+                return cast(list[str], json.load(file))
         except (OSError, json.JSONDecodeError) as e:
             self.logger.warning("Error loading %s: %s", filename, e)
             return []
@@ -247,7 +257,7 @@ class Instagram:
                     + "FROM moz_cookies "
                     + "WHERE host LIKE '%instagram.com'"
                 )
-            self.loader.context.update_cookies(dict(cookie_data))  # type: ignore[reportUnknownMemberType]
+            self.loader.context.update_cookies(dict(cookie_data))  # type: ignore[no-untyped-call]
 
         username = self.loader.test_login()
         if not username:
@@ -289,7 +299,7 @@ class Instagram:
                 profile.mediacount,
                 "Yes" if profile.is_private else "No",
             )
-            return profile
+            return cast(Profile, profile)
         except ProfileNotExistsException:
             self.logger.info("Profile '%s' not found", username)
         except ConnectionException as e:
