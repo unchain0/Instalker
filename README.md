@@ -1,17 +1,18 @@
 # 📸 Instalker
 
-**Instalker** is a project that automates the download of Instagram profiles, leveraging
+**Instalker** is a education project that automates the download of Instagram profiles, leveraging
 the `instaloader` library for efficient and organized data collection.
 
 ## ⚠️ Warnings
 
 Some considerations and recommendations when using this project.
 
-1. I don't recommend having more than 200 targets, due to Instagram's own limitations;
-2. Downloading highlights slows down downloads a LOT, especially if you have a large list of users;
+1. **I don't recommend having more than 200 targets**, due to Instagram's own limitations, try splitting them with other accounts;
+2. **Downloading highlights slows down downloads a lot**, especially if you have a large list of users;
 3. There's no problem using your main Instagram account, I've been using mine for a few months now and the most that's happened is a few warnings where I had to solve a captcha to unlock the account.
     3.1 If you use a recent account (no followers, no following, etc...) it can be blocked quickly by Instagram, but after a while you can recover it.
-4. I don't recommend downloading `tagged` on a large list of users, making it impossible to use the bot for a few hours, after which it returns to normal.
+    3.2 **Your account could be banned if you use a VPN**.
+4. I don't recommend downloading `tagged` on a large list of users (Instagram limitation) , making it impossible to use the bot for a few hours, after which it returns to normal.
 
 ## ✨ Main Features
 
@@ -31,7 +32,7 @@ Some considerations and recommendations when using this project.
 1. **Clone the repository:**
 
     ```bash
-    git clone --depth=1 https://github.com/bysedd/Instalker.git
+    git clone https://github.com/unchain0/Instalker.git
     ```
 
 2. **Navigate to the project directory:**
