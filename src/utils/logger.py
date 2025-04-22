@@ -1,27 +1,26 @@
-"""Module that sets up logging for the Instalker application."""
-
 import datetime
 import logging
 from logging import DEBUG, Formatter, StreamHandler, getLogger, root
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
 
-from src import LOG_DIRECTORY
+from src.config.settings import LOG_DIRECTORY
 
 
-def setup_logging() -> None:
-    """Configure application logging with rotation and formatting."""
-    # Reset existing handlers
+def setup_logging(log_level: int | None = None) -> logging.Logger:
+    """Configure application logging with rotation and formatting.
+
+    :param log_level: Optional custom log level (defaults to DEBUG if None).
+    :type log_level: Optional[int]
+    :return: The configured root logger.
+    :rtype: logging.Logger
+    """
     for handler in root.handlers[:]:
         root.removeHandler(handler)
 
-    # Log file path with timestamp
-    log_file = (
-        LOG_DIRECTORY
-        / f"instalker_{datetime.datetime.now(tz=datetime.UTC):%Y-%m-%d}.log"
-    )
+    timestamp = datetime.datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d")
+    log_file = LOG_DIRECTORY / f"instalker_{timestamp}.log"
 
-    # Formatters
     file_formatter = Formatter(
         fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(threadName)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -31,28 +30,26 @@ def setup_logging() -> None:
         datefmt="%H:%M:%S",
     )
 
-    # File handler with rotation
     file_handler = TimedRotatingFileHandler(
         filename=log_file,
         when="midnight",
-        backupCount=14,  # Keep logs for 14 days
+        backupCount=14,
         encoding="utf-8",
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(DEBUG)
 
-    # Console handler
     console_handler = StreamHandler(stdout)
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.INFO)
 
-    # Root logger configuration
     root_logger = getLogger()
-    root_logger.setLevel(DEBUG)
+    root_logger.setLevel(log_level or DEBUG)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
 
-    # Suppress external library logs using fully-qualified logging levels
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("instaloader").setLevel(logging.INFO)
-    logging.getLogger("PIL").setLevel(logging.INFO)
+    getLogger("urllib3").setLevel(logging.WARNING)
+    getLogger("instaloader").setLevel(logging.INFO)
+    getLogger("PIL").setLevel(logging.INFO)
+
+    return root_logger

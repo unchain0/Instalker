@@ -3,29 +3,96 @@ name = "instalker"
 version = "0.1.0"
 description = "Download profiles on Instagram"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
 
 [dependency-groups]
 dev = [
-	"pyright>=1.1.393",
-	"ruff>=0.9.4",
-	"types-pillow>=10.2.0.20240822",
-	"types-tqdm>=4.67.0.20241221",
+    "mypy>=1.15.0",
+    "pre-commit>=4.2.0",
+    "pylint>=3.3.6",
+    "ruff>=0.11.5",
+    "types-pillow>=10.2.0.20240822",
+    "types-tqdm>=4.67.0.20241221",
 ]
 
 [tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
 line-length = 88
-indent-width = 4
-target-version = "py312"
 
 [tool.ruff.lint]
-select = ["ALL"]
-ignore = ["SLF001", "PTH111", "PTH207", "S605", "D203", "D213"]
-per-file-ignores = { "main.py" = ["ERA001"], "__init__.py" = ["D104"] }
+select = [
+    "F",
+    "E",
+    "W",
+    "C90",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "YTT",
+    "S",
+    "B",
+    "A",
+    "C4",
+    "T10",
+    "ERA",
+    "T20",
+    "PT",
+    "Q",
+    "RET",
+    "SIM",
+    "TID",
+    "ARG",
+    "RUF",
+    "PL",
+]
+ignore = [
+    "E501",
+    "B008",
+    "C901",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "ARG001",
+    "ARG002",
+    "D203",
+    "D213",
+]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+per-file-ignores = {}
+preview = false
 
-[tool.pyright]
-typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
-reportUnknownMemberType = "none"
-reportConstantRedefinition = "none"
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
