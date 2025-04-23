@@ -50,17 +50,35 @@ class Instagram:
         :param target_users: The type of users to download content from.
         :type target_users: Literal["all", "public", "private"]
         """
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.public_users = self._load_user_list("public_users.json")
+        self.private_users = self._load_user_list("private_users.json")
+
+        self.users: set[str] = set()
+
         match target_users:
             case "all":
                 self.users = users if users is not None else TARGET_USERS
             case "public":
-                self.users = set(self._load_user_list("public_users.json"))
+                if self.public_users:
+                    self.users = set(self.public_users)
+                else:
+                    self.logger.warning(
+                        "Public user list is empty, falling back to all target users."
+                    )
+                    self.users = TARGET_USERS
             case "private":
-                self.users = set(self._load_user_list("private_users.json"))
+                if self.private_users:
+                    self.users = set(self.private_users)
+                else:
+                    self.logger.warning(
+                        "Private user list is empty, falling back to all target users."
+                    )
+                    self.users = TARGET_USERS
 
         self.highlights = highlights
         self.latest_stamps = LatestStamps(LATEST_STAMPS)  # type: ignore[no-untyped-call]
-        self.logger = logging.getLogger(self.__class__.__name__)
 
         self.loader = Instaloader(
             quiet=True,
@@ -71,13 +89,12 @@ class Instagram:
             fatal_status_codes=[400, 429],
         )
 
-        self.public_users = self._load_user_list("public_users.json")
-        self.private_users = self._load_user_list("private_users.json")
         self.logger.info(
             "Loaded %d public users and %d private users from existing files",
             len(self.public_users),
             len(self.private_users),
         )
+        self.logger.info("Targeting %d users for download", len(self.users))
 
     def run(self) -> None:
         """Execute the main sequence of operations for the class."""
@@ -195,22 +212,43 @@ class Instagram:
             )
 
     def _load_user_list(self, filename: str) -> list[str]:
-        """Load user list from JSON file.
+        """Load user list from JSON file. Creates the file if it doesn't exist.
 
         :param filename: Name of the JSON file to load.
         :type filename: str
         :return: List of usernames from the file or empty list if file doesn't exist.
         :rtype: List[str]
         """
-        file_path = RESOURCES_DIRECTORY / "target" / filename
+        target_dir = RESOURCES_DIRECTORY / "target"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        file_path = target_dir / filename
+
         if not file_path.exists():
-            return []
+            self.logger.info("Creating empty user list file: %s", file_path.name)
+            try:
+                with Path.open(file_path, "w", encoding="utf-8") as file:
+                    file.write("[]")
+                return []
+            except OSError as e:
+                self.logger.warning(
+                    "Could not create user list file %s: %s", filename, e
+                )
+                return []
 
         try:
             with Path.open(file_path, "r", encoding="utf-8") as file:
-                return cast(list[str], json.load(file))
-        except (OSError, json.JSONDecodeError) as e:
-            self.logger.warning("Error loading %s: %s", filename, e)
+                content = file.read()
+                if not content:  # Handle empty file
+                    self.logger.warning("User list file %s is empty.", filename)
+                    return []
+                return cast(list[str], json.loads(content))
+        except json.JSONDecodeError as e:
+            self.logger.warning(
+                "Error decoding JSON from %s (maybe invalid?): %s", filename, e
+            )
+            return []
+        except OSError as e:
+            self.logger.warning("Error reading user list file %s: %s", filename, e)
             return []
 
     def _save_user_lists(self) -> None:
@@ -326,7 +364,5 @@ class Instagram:
         }
 
         pattern = default_patterns.get(system(), ".mozilla/firefox/*/cookies.sqlite")
-
         cookie_paths = list(Path.home().glob(pattern))
-
         return str(cookie_paths[0]) if cookie_paths else None
