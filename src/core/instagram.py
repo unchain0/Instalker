@@ -145,8 +145,6 @@ class Instagram:
             ) as e:
                 self.logger.error("Error processing user '%s': %s", user, e)
 
-        self.logger.info("Download process completed for all users.")
-
     def _update_user_privacy_status(self, user: str, profile: Profile) -> None:
         """Update user's privacy status in our tracking lists.
 
@@ -160,10 +158,10 @@ class Instagram:
         is_private = profile.is_private
 
         if is_private and was_public:
-            self.logger.info("User '%s' changed from public to private", user)
+            tqdm.write(f"User '{user}' changed from public to private")
             self.public_users.remove(user)
         elif not is_private and was_private:
-            self.logger.info("User '%s' changed from private to public", user)
+            tqdm.write(f"User '{user}' changed from private to public")
             self.private_users.remove(user)
 
         if is_private and not was_private:
