@@ -4,7 +4,14 @@ version = "0.1.0"
 description = "Download profiles on Instagram"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
+dependencies = [
+    "instaloader>=4.14.1",
+    "pillow>=11.1.0",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.40",
+    "tqdm>=4.67.1",
+]
 
 [dependency-groups]
 dev = [
