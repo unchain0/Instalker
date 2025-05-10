@@ -46,14 +46,18 @@ class Base(DeclarativeBase):
 profile_hashtags_association = Table(
     "profile_hashtags",
     Base.metadata,
-    Column("profile_id", BigInteger, ForeignKey("profiles.id"), primary_key=True),
+    Column(
+        "profile_hashtag_id", BigInteger, ForeignKey("profiles.id"), primary_key=True
+    ),
     Column("hashtag_id", BigInteger, ForeignKey("hashtags.id"), primary_key=True),
 )
 
 profile_mentions_association = Table(
     "profile_mentions",
     Base.metadata,
-    Column("profile_id", BigInteger, ForeignKey("profiles.id"), primary_key=True),
+    Column(
+        "profile_mention_id", BigInteger, ForeignKey("profiles.id"), primary_key=True
+    ),
     Column("mention_id", BigInteger, ForeignKey("mentions.id"), primary_key=True),
 )
 
