@@ -7,25 +7,23 @@ from datetime import timedelta
 
 from sqlalchemy.orm import Session
 
-from src.core.db import SessionLocal  # Need SessionLocal for session management
+from src.core.db import SessionLocal
 from src.core.file_manager import FileManager
 from src.core.instagram import Instagram
 from src.utils.logger import setup_logging
-from src.utils.startup_tasks import run_startup_tasks  # Import startup tasks
+from src.utils.startup_tasks import run_startup_tasks
 
-logger = logging.getLogger(__name__)  # Get logger for example script
+logger = logging.getLogger(__name__)
 
 
-# Context manager for DB session (copied from main.py for demonstration)
 @contextmanager
 def get_session() -> Iterator[Session]:
-    """Provide a transactional scope around a series of operations."""
+    """Provide a transactional scope around a series of operations for the main loop."""
     db = SessionLocal()
     try:
         yield db
-        # Let operations within the context manage commit/rollback
     except Exception:
-        logger.exception("Session error occurred. Rolling back.")
+        logger.exception("Main processing session error occurred. Rolling back.")
         db.rollback()
         raise
     finally:
@@ -33,22 +31,14 @@ def get_session() -> Iterator[Session]:
 
 
 def main() -> None:
-    """Entry point for the example application.
+    """Entry point for the application's main processing loop."""
 
-    This function demonstrates:
-    1. Running file management tasks.
-    2. Running the main Instagram processing with DB integration.
-    """
-    # --- File Management ---
-    logger.info("Running file management tasks...")
-    file_manager = FileManager()
-    file_manager.remove_old_files(cutoff_delta=timedelta(days=30))
-    logger.info("File management tasks completed.")
-
-    # --- Instagram Processing ---
-    logger.info("Starting Instagram processing...")
+    # --- Run the main Instagram processing loop ---
+    logger.info("Starting main Instagram processing...")
     try:
         with get_session() as main_db_session:
+            fm = FileManager()
+            fm.remove_old_files(cutoff_delta=timedelta(days=15))
             instagram = Instagram(
                 db=main_db_session,
                 highlights=False,
@@ -56,11 +46,24 @@ def main() -> None:
             )
             instagram.run()
         logger.info("Instagram processing finished successfully.")
-    except Exception as e:
+    except (ConnectionError, TimeoutError) as e:
         logger.error(
-            "An error occurred during Instagram processing: %s", e, exc_info=True
+            "Network error during Instagram processing: %s",
+            e,
+            exc_info=True,
         )
-        # Decide how to handle errors in the example (e.g., re-raise, log only)
+    except ValueError as e:
+        logger.error(
+            "Invalid data encountered during Instagram processing: %s",
+            e,
+            exc_info=True,
+        )
+    except RuntimeError as e:
+        logger.error(
+            "Runtime error during Instagram processing: %s",
+            e,
+            exc_info=True,
+        )
 
 
 if __name__ == "__main__":
@@ -68,20 +71,7 @@ if __name__ == "__main__":
     setup_logging()
 
     # 2. Run Startup Tasks (DB Init, Conditional Import)
-    logger.info("Running startup tasks...")
-    try:
-        run_startup_tasks()
-    except SystemExit as e:
-        logger.critical("Startup tasks failed critically. Exiting. Error: %s", e)
-        exit(1)
-    except Exception as e:
-        logger.critical(
-            "An unexpected critical error during startup tasks. Exiting. Error: %s",
-            e,
-            exc_info=True,
-        )
-        exit(1)
-    logger.info("Startup tasks completed.")
+    run_startup_tasks()
 
-    # 3. Run Main Application Logic Example
+    # 3. Run Main Application Logic
     main()
