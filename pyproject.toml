@@ -15,7 +15,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15.0",
     "pre-commit>=4.2.0",
     "pylint>=3.3.6",
     "ruff>=0.11.5",
@@ -24,8 +23,22 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 88
-lint.select = ["A", "B", "C", "E", "F", "W", "I", "N", "UP", "RUF"]
-
-[tool.mypy]
-strict = true
+line-length = 120
+format.preview = true
+format.docstring-code-format = true
+lint.select = ["ALL"]
+lint.ignore = [
+    "ANN401", # Any as type annotation is allowed
+    "C901",   # complex structure
+    "COM812", # Conflict with formatter
+    "CPY",    # No copyright statements
+    "D",      # limited documentation
+    "DOC",    # limited documentation
+    "FIX002", # line contains to do
+    "ISC001", # Conflict with formatter
+    "S101",   # can use assert
+    "TD002",  # missing to do author
+    "TD003",  # missing to do link
+    "TD004",  # missing colon in to do
+]
+lint.preview = true
