@@ -4,7 +4,14 @@ version = "0.1.0"
 description = "Download profiles on Instagram"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["instaloader>=4.14.1", "pillow>=11.1.0", "tqdm>=4.67.1"]
+dependencies = [
+    "instaloader>=4.14.1",
+    "pillow>=11.1.0",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.40",
+    "tqdm>=4.67.1",
+]
 
 [dependency-groups]
 dev = [
@@ -17,82 +24,8 @@ dev = [
 ]
 
 [tool.ruff]
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-]
 line-length = 88
+lint.select = ["A", "B", "C", "E", "F", "W", "I", "N", "UP", "RUF"]
 
-[tool.ruff.lint]
-select = [
-    "F",
-    "E",
-    "W",
-    "C90",
-    "I",
-    "N",
-    "D",
-    "UP",
-    "YTT",
-    "S",
-    "B",
-    "A",
-    "C4",
-    "T10",
-    "ERA",
-    "T20",
-    "PT",
-    "Q",
-    "RET",
-    "SIM",
-    "TID",
-    "ARG",
-    "RUF",
-    "PL",
-]
-ignore = [
-    "E501",
-    "B008",
-    "C901",
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "ARG001",
-    "ARG002",
-    "D203",
-    "D213",
-]
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-per-file-ignores = {}
-preview = false
-
-[tool.ruff.lint.isort]
-known-first-party = ["src"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
+[tool.mypy]
+strict = true

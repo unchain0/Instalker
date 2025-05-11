@@ -20,9 +20,6 @@ main.py
 ### JetBrains template
 .idea/
 
-# Remove previous ipynb_checkpoints
-#   git rm -r .ipynb_checkpoints/
-
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

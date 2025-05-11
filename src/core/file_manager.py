@@ -12,10 +12,8 @@ from functools import partial
 from pathlib import Path
 from typing import ClassVar, Literal
 
-from PIL import Image
-
 from src import DOWNLOAD_DIRECTORY
-from src.config.settings import BATCH_SIZE, MAX_WORKERS
+from src.config.settings import MAX_WORKERS
 
 FileStatus = Literal["removed", "failed", "skipped"]
 FileResult = tuple[FileStatus, Path]
@@ -103,113 +101,6 @@ class FileManager:
                 return ("failed", file_path)
             return ("skipped", file_path)
         except (FileNotFoundError, PermissionError, OSError):
-            self.logger.exception("Error processing file %s", file_path)
-            return ("failed", file_path)
-
-    def remove_small_images(
-        self,
-        min_size: tuple[int, int],
-        max_workers: int = MAX_WORKERS,
-    ) -> None:
-        """Remove image files smaller than the provided dimensions in parallel.
-
-        :param min_size: Minimum (width, height) to keep files.
-        :type min_size: tuple[int, int]
-        :param max_workers: Number of parallel workers.
-        :type max_workers: int
-        """
-        self.logger.info(
-            "Starting removal of files smaller than %dx%d",
-            min_size[0],
-            min_size[1],
-        )
-
-        image_files = self._get_image_files()
-
-        if not image_files:
-            self.logger.info("No image files found to process")
-            return
-
-        removed_count = 0
-        failed_removals: list[Path] = []
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            batch_size = BATCH_SIZE
-            total_batches = (len(image_files) + batch_size - 1) // batch_size
-
-            for batch_num in range(total_batches):
-                start_idx = batch_num * batch_size
-                end_idx = min(start_idx + batch_size, len(image_files))
-                batch = image_files[start_idx:end_idx]
-
-                self.logger.debug(
-                    "Processing batch %d/%d (%d files)",
-                    batch_num + 1,
-                    total_batches,
-                    len(batch),
-                )
-
-                futures = [
-                    executor.submit(self._process_small_file, file, min_size)
-                    for file in batch
-                ]
-
-                for future in concurrent.futures.as_completed(futures):
-                    status, file_path = future.result()
-                    if status == "removed":
-                        removed_count += 1
-                    elif status == "failed":
-                        failed_removals.append(file_path)
-
-        self._log_removal_summary(removed_count, failed_removals)
-
-    def _get_image_files(self) -> list[Path]:
-        """Get only image files from the media files.
-
-        :return: A list of image file paths.
-        :rtype: list[Path]
-        """
-        return [
-            file
-            for file in self.media_files
-            if file.suffix.lower() in self.IMAGE_EXTENSIONS
-        ]
-
-    def _process_small_file(
-        self,
-        file_path: Path,
-        min_size: tuple[int, int],
-    ) -> FileResult:
-        """Process a file to check if it should be removed based on dimensions.
-
-        :param file_path: Path to the image file.
-        :type file_path: Path
-        :param min_size: Minimum (width, height) dimensions.
-        :type min_size: tuple[int, int]
-        :return: Status of the operation and the file path.
-        :rtype: FileResult
-        """
-        try:
-            # Check file size first as it's faster than opening the image
-            file_size = file_path.stat().st_size
-            if file_size > self.LARGE_FILE_THRESHOLD:
-                return ("skipped", file_path)
-
-            try:
-                with Image.open(file_path) as img:
-                    width, height = img.size
-            except OSError:
-                self.logger.debug("Could not open image: %s", file_path)
-                return ("skipped", file_path)
-
-            if width >= min_size[0] and height >= min_size[1]:
-                return ("skipped", file_path)
-
-            # Execute removal only if the image is too small
-            if self._remove_file(file_path):
-                return ("removed", file_path)
-            return ("failed", file_path)
-        except (FileNotFoundError, PermissionError, OSError, ValueError):
             self.logger.exception("Error processing file %s", file_path)
             return ("failed", file_path)
 
@@ -351,7 +242,7 @@ class FileManager:
                 self.logger.warning(file)
             self.logger.warning("Failed to remove %d files", len(failed_removals))
 
-    def get_storage_stats(self) -> dict:
+    def get_storage_stats(self) -> dict[str, int | float | dict[str, int]]:
         """Get statistics about the files in the download directory.
 
         :return: Dictionary with statistics like total size, file count, etc.
