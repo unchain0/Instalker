@@ -8,7 +8,7 @@ import json
 import logging
 from pathlib import Path
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger()
 
 RESOURCES_DIRECTORY: Path = Path(__file__).absolute().parents[2] / "src" / "resources"
 
@@ -36,7 +36,7 @@ def load_target_users() -> set[str]:
         with Path.open(target_file, encoding="utf-8") as f:
             return set(json.load(f))
     except json.JSONDecodeError:
-        logger.error(f"Error: The file {target_file} contains invalid JSON.")
+        logger.exception("Error: The file %s contains invalid JSON.", target_file)
         return set()
 
 
