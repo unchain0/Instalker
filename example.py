@@ -1,5 +1,3 @@
-"""Example script demonstrating usage of the Instalker components."""
-
 import logging
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -39,6 +37,7 @@ def main() -> None:
         with get_session() as main_db_session:
             fm = FileManager()
             fm.remove_old_files(cutoff_delta=timedelta(days=15))
+
             instagram = Instagram(
                 db=main_db_session,
                 highlights=False,
@@ -46,24 +45,12 @@ def main() -> None:
             )
             instagram.run()
         logger.info("Instagram processing finished successfully.")
-    except (ConnectionError, TimeoutError) as e:
-        logger.error(
-            "Network error during Instagram processing: %s",
-            e,
-            exc_info=True,
-        )
-    except ValueError as e:
-        logger.error(
-            "Invalid data encountered during Instagram processing: %s",
-            e,
-            exc_info=True,
-        )
-    except RuntimeError as e:
-        logger.error(
-            "Runtime error during Instagram processing: %s",
-            e,
-            exc_info=True,
-        )
+    except (ConnectionError, TimeoutError):
+        logger.exception("Network error during Instagram processing")
+    except ValueError:
+        logger.exception("Invalid data encountered during Instagram processing")
+    except RuntimeError:
+        logger.exception("Runtime error during Instagram processing")
 
 
 if __name__ == "__main__":
