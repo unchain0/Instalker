@@ -99,10 +99,11 @@ class FileManager:
                 if self._remove_file(file_path):
                     return ("removed", file_path)
                 return ("failed", file_path)
-            return ("skipped", file_path)
         except (FileNotFoundError, PermissionError, OSError):
             self.logger.exception("Error processing file %s", file_path)
             return ("failed", file_path)
+        else:
+            return ("skipped", file_path)
 
     def _get_files(self) -> list[Path]:
         """Get all media files in the download directory and its subdirectories.
@@ -125,10 +126,10 @@ class FileManager:
                             media_files.append(file_path)
                         except OSError:
                             problematic_files.append(str(file_path))
-                except Exception as e:
+                except OSError as e:
                     self.logger.warning(
                         "Error processing file '%s': %s",
-                        os.path.join(root, file),
+                        root_path / file,
                         e,
                     )
 
@@ -161,37 +162,31 @@ class FileManager:
             try:
                 file_stat = file_path.stat()
                 if file_stat.st_mtime <= 0:
-                    self.logger.warning(
-                        "Invalid modification time for file: %s", file_path
-                    )
+                    self.logger.warning("Invalid modification time for file: %s", file_path)
                     return False
 
                 file_mod_time = datetime.fromtimestamp(file_stat.st_mtime, tz=UTC)
-                return file_mod_time < cutoff_time
             except OSError:
                 try:
-                    file_stat = os.stat(str(file_path))
+                    file_stat = file_path.stat()
                     if file_stat.st_mtime <= 0:
-                        self.logger.warning(
-                            "Invalid modification time for file: %s", file_path
-                        )
+                        self.logger.warning("Invalid modification time for file: %s", file_path)
                         return False
 
                     file_mod_time = datetime.fromtimestamp(file_stat.st_mtime, tz=UTC)
-                    return file_mod_time < cutoff_time
-                except (OSError, ValueError) as e:
+                except (OSError, ValueError):
                     self.logger.exception(
-                        "Error getting the modification date for '%s': %s",
+                        "Error getting the modification date for '%s'",
                         file_path,
-                        e,
                     )
                     return False
-        except (OSError, ValueError) as e:
-            self.logger.exception(
-                "Error getting the modification date for '%s': %s",
-                file_path,
-                e,
-            )
+                else:
+                    return file_mod_time < cutoff_time
+            else:
+                return file_mod_time < cutoff_time
+
+        except (OSError, ValueError):
+            self.logger.exception("Error getting the modification date for '%s'", file_path)
             return False
 
     def _remove_file(self, file_path: Path) -> bool:
@@ -208,17 +203,19 @@ class FileManager:
 
         try:
             file_path.unlink()
-            return True
         except PermissionError:
-            self.logger.error("Permission denied when removing file: %s", file_path)
+            self.logger.exception("Permission denied when removing file: %s", file_path)
             try:
-                os.remove(str(file_path))
-                return True
+                file_path.unlink()
             except (OSError, PermissionError):
                 return False
+            else:
+                return True
         except Exception:
             self.logger.exception("Error removing file: %s", file_path)
             return False
+        else:
+            return True
 
     def _log_removal_summary(
         self,
