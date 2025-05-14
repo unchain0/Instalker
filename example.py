@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from src.core.db import SessionLocal
 from src.core.file_manager import FileManager
 from src.core.instagram import Instagram
-from src.utils.logger import setup_logging
 from src.utils.startup_tasks import run_startup_tasks
 
 logger = logging.getLogger(__name__)
@@ -54,11 +53,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # 1. Setup Logging
-    setup_logging()
-
-    # 2. Run Startup Tasks (DB Init, Conditional Import)
+    # Copy and paste the above code into a new file named `main.py`.
     run_startup_tasks()
-
-    # 3. Run Main Application Logic
     main()
