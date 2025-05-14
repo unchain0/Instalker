@@ -1,9 +1,3 @@
-"""Settings configuration for the Instalker application.
-
-Module manages all configuration settings with support for environment variables
-and custom configuration files.
-"""
-
 import json
 import logging
 from pathlib import Path

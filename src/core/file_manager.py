@@ -1,9 +1,3 @@
-"""Provides the FileManager class for managing file operations in a directory.
-
-It includes functionality to remove old files and files smaller than
-specified dimensions.
-"""
-
 import concurrent.futures
 import logging
 import os
