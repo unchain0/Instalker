@@ -1,9 +1,3 @@
-"""Provides functionality to manage Instagram downloads and session handling.
-
-Module includes classes and methods to handle downloading Instagram profiles,
-managing sessions, and importing session cookies from Firefox.
-"""
-
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -94,10 +88,11 @@ class Instagram:
     def _get_users_from_db(self, target: Literal["all", "public", "private"]) -> set[str]:
         """Fetches usernames from the database based on privacy status."""
         stmt = select(DbProfile.username)
-        if target == "public":
-            stmt = stmt.where(DbProfile.is_private.is_(False))
-        elif target == "private":
-            stmt = stmt.where(DbProfile.is_private.is_(True))
+        match target:
+            case "public":
+                stmt = stmt.where(DbProfile.is_private.is_(False))
+            case "private":
+                stmt = stmt.where(DbProfile.is_private.is_(True))
 
         return set(self.db.scalars(stmt).all())
 
