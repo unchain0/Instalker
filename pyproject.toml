@@ -5,21 +5,21 @@ description = "Download profiles on Instagram"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "instaloader>=4.14.1",
-    "pillow>=11.1.0",
-    "psycopg2-binary>=2.9.10",
-    "python-dotenv>=1.1.0",
-    "sqlalchemy>=2.0.40",
-    "tqdm>=4.67.1",
+  "instaloader>=4.14.1",
+  "pillow>=11.1.0",
+  "psycopg2-binary>=2.9.10",
+  "python-dotenv>=1.1.0",
+  "sqlalchemy>=2.0.40",
+  "tqdm>=4.67.1",
 ]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.2.0",
-    "pylint>=3.3.6",
-    "ruff>=0.11.5",
-    "types-pillow>=10.2.0.20240822",
-    "types-tqdm>=4.67.0.20241221",
+  "pre-commit>=4.2.0",
+  "pyrefly>=0.16.1",
+  "ruff>=0.11.10",
+  "types-pillow>=10.2.0.20240822",
+  "types-tqdm>=4.67.0.20241221",
 ]
 
 [tool.ruff]
@@ -28,17 +28,21 @@ format.preview = true
 format.docstring-code-format = true
 lint.select = ["ALL"]
 lint.ignore = [
-    "ANN401", # Any as type annotation is allowed
-    "C901",   # complex structure
-    "COM812", # Conflict with formatter
-    "CPY",    # No copyright statements
-    "D",      # limited documentation
-    "DOC",    # limited documentation
-    "FIX002", # line contains to do
-    "ISC001", # Conflict with formatter
-    "S101",   # can use assert
-    "TD002",  # missing to do author
-    "TD003",  # missing to do link
-    "TD004",  # missing colon in to do
+  "ANN401", # Any as type annotation is allowed
+  "C901",   # complex structure
+  "COM812", # Conflict with formatter
+  "CPY",    # No copyright statements
+  "D",      # limited documentation
+  "DOC",    # limited documentation
+  "FIX002", # line contains to do
+  "ISC001", # Conflict with formatter
+  "S101",   # can use asserting
+  "TD002",  # missing to do author
+  "TD003",  # missing to do a link
+  "TD004",  # missing colon in to do
 ]
 lint.preview = true
+
+[tool.pyrefly]
+project_includes = ["**/*"]
+project_excludes = ["**/.[!/.]*", "**/*venv/**/*"]
