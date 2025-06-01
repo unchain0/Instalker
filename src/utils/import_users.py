@@ -6,13 +6,13 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.config.settings import RESOURCES_DIRECTORY
 from src.core.db import Profile as DbProfile
 from src.core.db import (
     SessionLocal,
     init_db,
 )
 from src.utils.logger import setup_logging
+from src.utils.settings import RESOURCES_DIRECTORY
 
 
 class UserImporter:

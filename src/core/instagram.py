@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import Literal, cast
+from typing import cast
 
 from instaloader import (
     ConnectionException,
@@ -18,19 +18,20 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from tqdm import tqdm
 
-from src.config.settings import (
-    DOWNLOAD_DIRECTORY,
-    LATEST_STAMPS,
-)
 from src.core.db import Hashtag, Mention
 from src.core.db import Profile as DbProfile
-from src.utils.logger import setup_logging
+from src.utils import (
+    DOWNLOAD_DIRECTORY,
+    LATEST_STAMPS,
+    TARGET_USERS,
+    setup_logging,
+)
 
 
 class Instagram:
-    """Manages Instagram downloads and session handling, integrated with DB.
+    """Manages Instagram downloads and session handling.
 
-    Handles fetching profiles, updating database records, downloading content,
+    Handles fetching profiles, downloading content,
     and managing login sessions via Firefox cookies.
     """
 
@@ -40,18 +41,15 @@ class Instagram:
         users: set[str] | None = None,
         *,
         highlights: bool = False,
-        target_users: Literal["all", "public", "private"] = "all",
     ) -> None:
         """Initialize the class with settings, configurations, and DB session.
 
         :param db: The SQLAlchemy database session.
         :type db: Session
-        :param users: Optional explicit set of usernames to target, overriding DB query.
+        :param users: Optional explicit set of usernames to target, overriding JSON file.
         :type users: Optional[set[str]]
         :param highlights: Whether to download highlights or not.
         :type highlights: bool
-        :param target_users: Filter users from DB ('all', 'public', 'private').
-        :type target_users: Literal["all", "public", "private"]
         """
         self.logger = setup_logging()
         self.db = db
@@ -60,11 +58,10 @@ class Instagram:
             self.users = users
             self.logger.info("Using explicitly provided list of %d users.", len(self.users))
         else:
-            self.users = self._get_users_from_db(target_users)
+            self.users = TARGET_USERS
             self.logger.info(
-                "Fetched %d users from database based on target '%s'.",
+                "Fetched %d users from JSON file.",
                 len(self.users),
-                target_users,
             )
 
         self.highlights = highlights
@@ -85,22 +82,11 @@ class Instagram:
             fatal_status_codes=[400, 429],
         )
 
-    def _get_users_from_db(self, target: Literal["all", "public", "private"]) -> set[str]:
-        """Fetches usernames from the database based on privacy status."""
-        stmt = select(DbProfile.username)
-        match target:
-            case "public":
-                stmt = stmt.where(DbProfile.is_private.is_(False))
-            case "private":
-                stmt = stmt.where(DbProfile.is_private.is_(True))
-
-        return set(self.db.scalars(stmt).all())
-
     def run(self) -> None:
         """Execute the main sequence of operations for the class."""
         if not self.users:
             self.logger.warning(
-                "No target users specified or found in DB for filter. Please add users to the database.",
+                "No target users specified or found in JSON file. Please add users to the JSON file.",
             )
             return
 
@@ -253,10 +239,10 @@ class Instagram:
                 profile.username,
             )
 
-    def _fetch_and_load_cookies(self) -> dict[str, str]:
+    def _fetch_and_load_cookies(self) -> dict[str, str] | None:
         """Fetch Instagram cookies from Firefox and load them into Instaloader.
 
-        :raises SystemExit: If there's an error reading the cookie database.
+        :raises OperationalError: If there's an error reading the cookie database.
         :return: A dictionary of cookies if found, otherwise None.
         :rtype: dict[str, str] | None
         """
@@ -266,15 +252,14 @@ class Instagram:
             cookies = dict(cookie_data.fetchall())
             if not cookies:
                 self.logger.warning("No Instagram cookies found in the Firefox cookie database.")
-                return {}
+                return None
 
             self.loader.context.update_cookies(cookies)  # type: ignore[no-untyped-call]
-            self.logger.debug("Loaded %d Instagram cookies into context.", len(cookies))
         except OperationalError:
             self.logger.exception("Error reading Firefox cookie database")
         else:
             return cookies
-        return {}
+        return None
 
     def _test_login_status(self) -> None:
         """Test the Instaloader login status. Assumes cookies have been loaded.
@@ -287,7 +272,7 @@ class Instagram:
                 self.logger.error("Failed to log in using imported cookies.")
                 sys.exit()
 
-            self.logger.info("Successfully logged in or session valid for '%s'", username)
+            self.logger.info("Session valid for '%s'", username)
             self.loader.context.username = username  # type: ignore[assignment]
         except InstaloaderException:
             self.logger.exception("Instaloader error during login test")

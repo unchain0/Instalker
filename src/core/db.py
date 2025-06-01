@@ -47,15 +47,15 @@ class Base(DeclarativeBase):
 profile_hashtags_association = Table(
     "profile_hashtags",
     Base.metadata,
-    Column("profile_hashtag_id", BigInteger, ForeignKey("profiles.id"), primary_key=True),
-    Column("hashtag_id", BigInteger, ForeignKey("hashtags.id"), primary_key=True),
+    Column("profile_hashtag_id", BigInteger(), ForeignKey("profiles.id"), primary_key=True),
+    Column("hashtag_id", BigInteger(), ForeignKey("hashtags.id"), primary_key=True),
 )
 
 profile_mentions_association = Table(
     "profile_mentions",
     Base.metadata,
-    Column("profile_mention_id", BigInteger, ForeignKey("profiles.id"), primary_key=True),
-    Column("mention_id", BigInteger, ForeignKey("mentions.id"), primary_key=True),
+    Column("profile_mention_id", BigInteger(), ForeignKey("profiles.id"), primary_key=True),
+    Column("mention_id", BigInteger(), ForeignKey("mentions.id"), primary_key=True),
 )
 
 
@@ -65,19 +65,19 @@ class Profile(Base):
 
     __tablename__ = "profiles"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
-    username: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
-    full_name: Mapped[str | None] = mapped_column(String)
-    biography: Mapped[str | None] = mapped_column(Text)
-    followers: Mapped[int | None] = mapped_column(Integer)
-    followees: Mapped[int | None] = mapped_column(Integer)
-    post_count: Mapped[int | None] = mapped_column(Integer)
-    business_category_name: Mapped[str | None] = mapped_column(String)
-    external_url: Mapped[str | None] = mapped_column(String)
-    is_private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    blocked_by_viewer: Mapped[bool | None] = mapped_column(Boolean)
-    followed_by_viewer: Mapped[bool | None] = mapped_column(Boolean)
-    follows_viewer: Mapped[bool | None] = mapped_column(Boolean)
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
+    full_name: Mapped[str | None] = mapped_column(String())
+    biography: Mapped[str | None] = mapped_column(Text())
+    followers: Mapped[int | None] = mapped_column(Integer())
+    followees: Mapped[int | None] = mapped_column(Integer())
+    post_count: Mapped[int | None] = mapped_column(Integer())
+    business_category_name: Mapped[str | None] = mapped_column(String())
+    external_url: Mapped[str | None] = mapped_column(String())
+    is_private: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
+    blocked_by_viewer: Mapped[bool | None] = mapped_column(Boolean())
+    followed_by_viewer: Mapped[bool | None] = mapped_column(Boolean())
+    follows_viewer: Mapped[bool | None] = mapped_column(Boolean())
     last_checked: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -105,8 +105,8 @@ class Hashtag(Base):
 
     __tablename__ = "hashtags"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    tag: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True)
+    tag: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
 
     # Relationship back to profiles
     profiles: Mapped[list["Profile"]] = relationship(
@@ -121,8 +121,8 @@ class Mention(Base):
 
     __tablename__ = "mentions"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    username: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True)
+    username: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
 
     # Relationship back to profiles
     profiles: Mapped[list["Profile"]] = relationship(
@@ -132,7 +132,6 @@ class Mention(Base):
     )
 
 
-# --- Dependency for getting DB session ---
 def get_db() -> Iterator[Session]:
     """Dependency to get a database session."""
     db = SessionLocal()
@@ -142,7 +141,6 @@ def get_db() -> Iterator[Session]:
         db.close()
 
 
-# --- Database Initialization ---
 def init_db() -> None:
     """Create database tables."""
     Base.metadata.create_all(bind=engine)

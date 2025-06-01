@@ -4,7 +4,7 @@ from logging import DEBUG, Formatter, StreamHandler, getLogger, root
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
 
-from src.config.settings import LOG_DIRECTORY
+from src.utils.settings import LOG_DIRECTORY
 
 
 def setup_logging(log_level: int | None = None) -> logging.Logger:

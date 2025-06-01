@@ -6,8 +6,7 @@ from functools import partial
 from pathlib import Path
 from typing import ClassVar, Literal
 
-from src import DOWNLOAD_DIRECTORY
-from src.config.settings import MAX_WORKERS
+from src.utils import DOWNLOAD_DIRECTORY, MAX_WORKERS
 
 FileStatus = Literal["removed", "failed", "skipped"]
 FileResult = tuple[FileStatus, Path]

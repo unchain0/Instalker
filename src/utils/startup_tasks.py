@@ -1,12 +1,9 @@
-import logging
-
 from sqlalchemy import func, select
 
 from src.core.db import Profile, SessionLocal, init_db
-from src.utils.import_users import UserImporter
+from src.utils import UserImporter, setup_logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 user_importer = UserImporter()
 
 
@@ -38,13 +35,3 @@ def run_startup_tasks() -> None:
     finally:
         if db_check_session:
             db_check_session.close()
-
-
-# Allow running startup tasks standalone if needed (for testing/manual init)
-if __name__ == "__main__":
-    logger.info("Running startup tasks standalone...")
-    try:
-        run_startup_tasks()
-        logger.info("Startup tasks completed successfully.")
-    except Exception:
-        logger.exception("Standalone startup tasks failed")
