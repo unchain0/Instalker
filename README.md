@@ -30,7 +30,7 @@ Some considerations and recommendations when using this project.
 2. **[Instagram account](https://www.instagram.com/)**: Needed for authentication to access private profiles and avoid rate limits.
 3. **[Python 3](https://www.python.org/downloads/)**: Python 3.10 or higher recommended.
 4. **[PostgreSQL](https://www.postgresql.org/download/)**: A running PostgreSQL server (version 12 or higher recommended).
-5. **[uv](https://docs.astral.sh/uv/#installation)** (or pip): For Python dependency management.
+5. **[uv](https://docs.astral.sh/uv/#installation)**: For Python dependency management.
 
 ## 🚀 Setup
 
