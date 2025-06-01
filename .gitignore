@@ -1,10 +1,7 @@
 ### Project template
-downloads/
-latest_stamps.ini
-!users.json
-*.json*
-*.log*
 main.py
+!*example.json
+src/resources
 
 ### VisualStudioCode template
 .vscode/*
