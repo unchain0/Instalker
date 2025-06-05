@@ -6,8 +6,6 @@ from src import FileManager, Instagram, get_session, setup_logging
 def main() -> None:
     """Entry point for the application's main processing loop."""
 
-    # --- Run the main Instagram processing loop ---
-    logger.info("Starting main Instagram processing...")
     try:
         with get_session() as main_db_session:
             fm = FileManager()

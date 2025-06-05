@@ -1,3 +1,5 @@
+import contextlib
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -35,6 +37,20 @@ class Instagram:
     and managing login sessions via Firefox cookies.
     """
 
+    @staticmethod
+    @contextlib.contextmanager
+    def _suppress_output() -> None:
+        """Context manager to suppress stdout and stderr output.
+
+        Uses Path.open() with explicit encoding for better compatibility.
+        """
+        with (
+            Path(os.devnull).open("w", encoding="utf-8") as devnull,
+            contextlib.redirect_stdout(devnull),
+            contextlib.redirect_stderr(devnull),
+        ):
+            yield
+
     def __init__(
         self,
         db: Session,
@@ -53,6 +69,8 @@ class Instagram:
         """
         self.logger = setup_logging()
         self.db = db
+
+        self.logger.info("Starting main Instagram processing...")
 
         if users is not None:
             self.users = users
@@ -105,8 +123,6 @@ class Instagram:
 
         for user in progress_bar:
             progress_bar.set_postfix(user=user)
-            profile: Profile | None = None
-            db_profile: DbProfile | None = None
 
             try:
                 profile = self._get_instagram_profile(user)
@@ -123,7 +139,8 @@ class Instagram:
                 if db_profile.is_private and not profile.followed_by_viewer:
                     continue
 
-                self._download_profile_content(profile)
+                with Instagram._suppress_output():
+                    self._download_profile_content(profile)
             except (
                 ProfileNotExistsException,
                 ConnectionException,
@@ -242,7 +259,7 @@ class Instagram:
     def _fetch_and_load_cookies(self) -> dict[str, str] | None:
         """Fetch Instagram cookies from Firefox and load them into Instaloader.
 
-        :raises OperationalError: If there's an error reading the cookie database.
+        :raises OperationalError: If there's an error, read the cookie database.
         :return: A dictionary of cookies if found, otherwise None.
         :rtype: dict[str, str] | None
         """

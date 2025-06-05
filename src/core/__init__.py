@@ -25,4 +25,4 @@ def get_session() -> Iterator[Session]:
         db.close()
 
 
-__all__ = ["FileManager", "Instagram", "Profile", "get_session", "init_db"]
+__all__ = ["FileManager", "Instagram", "Profile", "SessionLocal", "get_session", "init_db"]
