@@ -1,11 +1,12 @@
 import contextlib
 import os
 import sys
+from collections.abc import Generator
 from datetime import UTC, datetime
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import cast
+from typing import Any, cast
 
 from instaloader import (
     ConnectionException,
@@ -39,7 +40,7 @@ class Instagram:
 
     @staticmethod
     @contextlib.contextmanager
-    def _suppress_output() -> None:
+    def _suppress_output() -> Generator[None, Any]:
         """Context manager to suppress stdout and stderr output.
 
         Uses Path.open() with explicit encoding for better compatibility.
@@ -151,6 +152,14 @@ class Instagram:
             finally:
                 pass
 
+    def _get_or_create_item(self, item_text: str, model_class: type, field_name: str) -> Any:
+        stmt = select(model_class).where(getattr(model_class, field_name).is_(item_text))
+        item = self.db.scalars(stmt).one_or_none()
+        if not item:
+            item = model_class(**{field_name: item_text})
+            self.db.add(item)
+        return item
+
     def _upsert_profile_to_db(self, profile: Profile) -> DbProfile | None:
         """Creates or updates a profile record in the database."""
         username = profile.username
@@ -178,21 +187,13 @@ class Instagram:
             hashtags = []
             if profile.biography_hashtags:
                 for tag_text in profile.biography_hashtags:
-                    tag_stmt = select(Hashtag).where(Hashtag.tag == tag_text)
-                    hashtag = self.db.scalars(tag_stmt).one_or_none()
-                    if not hashtag:
-                        hashtag = Hashtag(tag=tag_text)
-                        self.db.add(hashtag)
+                    hashtag = self._get_or_create_item(tag_text, Hashtag, "tag")
                     hashtags.append(hashtag)
 
             mentions = []
             if profile.biography_mentions:
                 for mention_username in profile.biography_mentions:
-                    mention_stmt = select(Mention).where(Mention.username == mention_username)
-                    mention = self.db.scalars(mention_stmt).one_or_none()
-                    if not mention:
-                        mention = Mention(username=mention_username)
-                        self.db.add(mention)
+                    mention = self._get_or_create_item(mention_username, Mention, "username")
                     mentions.append(mention)
 
             if db_profile:
@@ -297,7 +298,7 @@ class Instagram:
     def _import_session(self) -> None:
         """Import session from Firefox cookies and verify login.
 
-        :raises SystemExit: If cookie DB error, no cookies found, or login fails.
+        :raises SystemExit: If cookie DB error, no cookies are found, or login fails.
         """
         self.logger.debug("Attempting to import session cookie from Firefox.")
         try:
@@ -306,8 +307,9 @@ class Instagram:
                 sys.exit("No Instagram cookies found in Firefox. Cannot proceed.")
 
             self._test_login_status()
-        except Exception:
-            self.logger.exception("Unexpected error during session import.")
+        except (OperationalError, InstaloaderException, ConnectionException):
+            self.logger.exception("Error during session import.")
+            sys.exit("Failed to import session.")
 
     def _get_instagram_profile(self, username: str) -> Profile | None:
         """Retrieve the Instaloader profile object for a given user.
@@ -331,7 +333,7 @@ class Instagram:
             self.logger.exception("Connection error retrieving profile '%s'", username)
         except InstaloaderException:
             self.logger.exception("Instaloader error retrieving profile '%s'", username)
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             self.logger.exception("Unexpected error retrieving profile '%s'.", username)
         return None
 
@@ -352,6 +354,6 @@ class Instagram:
             cookie_paths = list(Path.home().glob(pattern))
             if cookie_paths:
                 return str(cookie_paths[0])
-        except Exception:
-            self.logger.exception("Error searching for cookie file")
+        except (PermissionError, OSError):
+            self.logger.exception("Error accessing cookie file")
         return None
