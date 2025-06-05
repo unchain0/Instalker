@@ -16,8 +16,8 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pre-commit>=4.2.0",
-  "pyrefly>=0.16.1",
-  "ruff>=0.11.10",
+  "pyrefly>=0.18.0",
+  "ruff>=0.11.12",
   "types-pillow>=10.2.0.20240822",
   "types-tqdm>=4.67.0.20241221",
 ]
