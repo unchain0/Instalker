@@ -153,7 +153,7 @@ class Instagram:
                 pass
 
     def _get_or_create_item(self, item_text: str, model_class: type, field_name: str) -> Any:
-        stmt = select(model_class).where(getattr(model_class, field_name).is_(item_text))
+        stmt = select(model_class).where(item_text == getattr(model_class, field_name))
         item = self.db.scalars(stmt).one_or_none()
         if not item:
             item = model_class(**{field_name: item_text})
