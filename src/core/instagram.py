@@ -202,7 +202,6 @@ class Instagram:
                     setattr(db_profile, key, value)
                 db_profile.hashtags = hashtags
                 db_profile.mentions = mentions
-
             else:
                 self.logger.debug("Creating new DB profile for '%s'.", username)
                 db_profile = DbProfile(username=username, **profile_data)
