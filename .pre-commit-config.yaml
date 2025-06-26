@@ -31,3 +31,8 @@ repos:
         types: [python]
         pass_filenames: false
         always_run: true
+
+-   repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0  # Use a versão mais recente
+    hooks:
+    -   id: markdownlint
