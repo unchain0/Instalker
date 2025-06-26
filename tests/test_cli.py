@@ -3,25 +3,25 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from typer.testing import CliRunner
 
-import cli  # Importar o módulo cli inteiro
-from src.core.db import Base, Profile  # Importar Base, Profile
+import cli
+from src.core.db import Base, Profile
 
 runner = CliRunner()
 
 
 @pytest.fixture(name="db_session_cli")
 def db_session_cli_fixture(monkeypatch: pytest.MonkeyPatch) -> Session:
-    """Fixture for a in-memory SQLite database session for CLI tests."""
+    """Fixture for an in-memory SQLite database session for CLI tests."""
     engine = create_engine("sqlite:///:memory:")
     testing_session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    # Monkeypatch _get_db_session em cli.py para usar o banco de dados de teste
-    monkeypatch.setattr(cli, "_get_db_session", testing_session_local)  # PLW0108 corrigido
+    # Monkeypatch _get_db_session in cli.py to use the test database
+    monkeypatch.setattr(cli, "_get_db_session", testing_session_local)
 
-    Base.metadata.create_all(engine)  # Criar tabelas antes de cada teste
+    Base.metadata.create_all(engine)  # Create tables before each test
     with testing_session_local() as session:
         yield session
-    Base.metadata.drop_all(engine)  # Remover tabelas depois de cada teste
+    Base.metadata.drop_all(engine)  # Remove tables after each test
 
 
 def test_cli_list_empty(db_session_cli: Session) -> None:  # noqa: ARG001
@@ -35,7 +35,7 @@ def test_cli_list_empty(db_session_cli: Session) -> None:  # noqa: ARG001
         and "Full Name" in result.stdout
         and "Followers" in result.stdout
         and "Last Checked" in result.stdout
-    )  # E501 corrigido
+    )
 
 
 def test_cli_add_public_user(db_session_cli: Session) -> None:

@@ -26,7 +26,6 @@ from src.core.db import Profile as DbProfile
 from src.utils import (
     DOWNLOAD_DIRECTORY,
     LATEST_STAMPS,
-    TARGET_USERS,
     setup_logging,
 )
 
@@ -77,9 +76,11 @@ class Instagram:
             self.users = users
             self.logger.info("Using explicitly provided list of %d users.", len(self.users))
         else:
-            self.users = TARGET_USERS
+            # Fetch users from the database
+            db_profiles = self.db.query(DbProfile).all()
+            self.users = {profile.username for profile in db_profiles}
             self.logger.info(
-                "Fetched %d users from JSON file.",
+                "Fetched %d users from the database.",
                 len(self.users),
             )
 
@@ -103,12 +104,6 @@ class Instagram:
 
     def run(self) -> None:
         """Execute the main sequence of operations for the class."""
-        if not self.users:
-            self.logger.warning(
-                "No target users specified or found in JSON file. Please add users to the JSON file.",
-            )
-            return
-
         self._import_session()
         self._download()
 

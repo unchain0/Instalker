@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.table import Table
 from sqlalchemy.orm import Session
 
-from src.core.db import Profile, SessionLocal  # Importar SessionLocal e Profile
+from src.core.db import Profile, SessionLocal
 
 app = typer.Typer(
     help="A CLI for managing Instalker target users.",
@@ -55,11 +55,11 @@ def add(
         typer.Argument(..., help="The Instagram username to add.", show_default=False),
     ],
     private: bool = typer.Option(
-        False,  # Valor padrão aqui
+        False,  # Default value
         "--private",
         "-p",
         help="Flag to mark the user as a private profile.",
-    ),  # Removido o Annotated
+    ),
 ) -> None:
     """Adds a user to the database."""
     with _get_db_session() as db:

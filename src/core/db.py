@@ -4,7 +4,6 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -27,7 +26,6 @@ from sqlalchemy.sql import func
 
 load_dotenv()
 
-# --- Database Configuration ---
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     err = "DATABASE_URL environment variable is not set."
@@ -37,29 +35,25 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# --- SQLAlchemy Base Model ---
 class Base(DeclarativeBase):
     """Base class for SQLAlchemy models."""
 
 
-# --- Association Tables ---
-# Using SQLAlchemy Core Table for association tables (no separate model class needed)
 profile_hashtags_association = Table(
     "profile_hashtags",
     Base.metadata,
-    Column("profile_hashtag_id", BigInteger(), ForeignKey("profiles.id"), primary_key=True),
-    Column("hashtag_id", BigInteger(), ForeignKey("hashtags.id"), primary_key=True),
+    Column("profile_hashtag_id", Integer(), ForeignKey("profiles.id"), primary_key=True),
+    Column("hashtag_id", Integer(), ForeignKey("hashtags.id"), primary_key=True),
 )
 
 profile_mentions_association = Table(
     "profile_mentions",
     Base.metadata,
-    Column("profile_mention_id", BigInteger(), ForeignKey("profiles.id"), primary_key=True),
-    Column("mention_id", BigInteger(), ForeignKey("mentions.id"), primary_key=True),
+    Column("profile_mention_id", Integer(), ForeignKey("profiles.id"), primary_key=True),
+    Column("mention_id", Integer(), ForeignKey("mentions.id"), primary_key=True),
 )
 
 
-# --- SQLAlchemy Models ---
 class Profile(Base):
     """SQLAlchemy model representing an Instagram profile."""
 
@@ -87,7 +81,6 @@ class Profile(Base):
         nullable=False,
     )
 
-    # Relationships
     hashtags: Mapped[list["Hashtag"]] = relationship(
         secondary=profile_hashtags_association,
         back_populates="profiles",
@@ -105,10 +98,9 @@ class Hashtag(Base):
 
     __tablename__ = "hashtags"
 
-    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     tag: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
 
-    # Relationship back to profiles
     profiles: Mapped[list["Profile"]] = relationship(
         secondary=profile_hashtags_association,
         back_populates="hashtags",
@@ -121,10 +113,9 @@ class Mention(Base):
 
     __tablename__ = "mentions"
 
-    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
     username: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
 
-    # Relationship back to profiles
     profiles: Mapped[list["Profile"]] = relationship(
         secondary=profile_mentions_association,
         back_populates="mentions",
