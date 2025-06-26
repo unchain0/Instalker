@@ -65,7 +65,7 @@ class Profile(Base):
 
     __tablename__ = "profiles"
 
-    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(), unique=True, index=True, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String())
     biography: Mapped[str | None] = mapped_column(Text())

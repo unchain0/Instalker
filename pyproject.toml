@@ -40,5 +40,10 @@ lint.ignore = [
     "TD002",  # missing to do author
     "TD003",  # missing to do a link
     "TD004",  # missing colon in to do
+    "FBT001", # Boolean-typed positional argument in function definition
+    "FBT003", # Boolean positional value in function call
 ]
-lint.preview = true
+lint.preview = true # Movido para cá
+
+[tool.ruff.lint.per-file-ignores]
+"cli.py" = ["FBT001", "FBT003"]
