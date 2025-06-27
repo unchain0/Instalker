@@ -6,7 +6,6 @@ from src.utils.settings import (
     LOG_DIRECTORY,
     MAX_WORKERS,
     RESOURCES_DIRECTORY,
-    TARGET_USERS,
 )
 from src.utils.startup_tasks import run_startup_tasks
 
@@ -18,7 +17,6 @@ __all__ = [
     "LOG_DIRECTORY",
     "MAX_WORKERS",
     "RESOURCES_DIRECTORY",
-    "TARGET_USERS",
     "UserImporter",
     "root",
     "setup_logging",
