@@ -1,9 +1,12 @@
+import contextlib
+import os
 import sys
+from collections.abc import Generator
 from datetime import UTC, datetime
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import cast
+from typing import TYPE_CHECKING, Any, cast
 
 from instaloader import (
     ConnectionException,
@@ -18,12 +21,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from tqdm import tqdm
 
+if TYPE_CHECKING:
+    from sqlalchemy.sql.selectable import Select
+
 from src.core.db import Hashtag, Mention
 from src.core.db import Profile as DbProfile
 from src.utils import (
     DOWNLOAD_DIRECTORY,
     LATEST_STAMPS,
-    TARGET_USERS,
     setup_logging,
 )
 
@@ -35,12 +40,27 @@ class Instagram:
     and managing login sessions via Firefox cookies.
     """
 
+    @staticmethod
+    @contextlib.contextmanager
+    def _suppress_output() -> Generator[None, Any]:
+        """Context manager to suppress stdout and stderr output.
+
+        Uses Path.open() with explicit encoding for better compatibility.
+        """
+        with (
+            Path(os.devnull).open("w", encoding="utf-8") as devnull,
+            contextlib.redirect_stdout(devnull),
+            contextlib.redirect_stderr(devnull),
+        ):
+            yield
+
     def __init__(
         self,
         db: Session,
         users: set[str] | None = None,
         *,
         highlights: bool = False,
+        privacy_filter: str = "all",
     ) -> None:
         """Initialize the class with settings, configurations, and DB session.
 
@@ -50,18 +70,30 @@ class Instagram:
         :type users: Optional[set[str]]
         :param highlights: Whether to download highlights or not.
         :type highlights: bool
+        :param privacy_filter: Filter profiles by privacy type ("public", "private", "all").
+        :type privacy_filter: str
         """
         self.logger = setup_logging()
         self.db = db
+
+        self.logger.info("Starting main Instagram processing...")
 
         if users is not None:
             self.users = users
             self.logger.info("Using explicitly provided list of %d users.", len(self.users))
         else:
-            self.users = TARGET_USERS
+            # Fetch users from the database
+            query = self.db.query(DbProfile)
+            if privacy_filter == "public":
+                query = query.filter(DbProfile.is_private.is_(False))
+            elif privacy_filter == "private":
+                query = query.filter(DbProfile.is_private.is_(True))
+            db_profiles = query.all()
+            self.users = {profile.username for profile in db_profiles}
             self.logger.info(
-                "Fetched %d users from JSON file.",
+                "Fetched %d users from the database with privacy filter '%s'.",
                 len(self.users),
+                privacy_filter,
             )
 
         self.highlights = highlights
@@ -84,12 +116,6 @@ class Instagram:
 
     def run(self) -> None:
         """Execute the main sequence of operations for the class."""
-        if not self.users:
-            self.logger.warning(
-                "No target users specified or found in JSON file. Please add users to the JSON file.",
-            )
-            return
-
         self._import_session()
         self._download()
 
@@ -105,8 +131,6 @@ class Instagram:
 
         for user in progress_bar:
             progress_bar.set_postfix(user=user)
-            profile: Profile | None = None
-            db_profile: DbProfile | None = None
 
             try:
                 profile = self._get_instagram_profile(user)
@@ -123,7 +147,8 @@ class Instagram:
                 if db_profile.is_private and not profile.followed_by_viewer:
                     continue
 
-                self._download_profile_content(profile)
+                with Instagram._suppress_output():
+                    self._download_profile_content(profile)
             except (
                 ProfileNotExistsException,
                 ConnectionException,
@@ -133,6 +158,14 @@ class Instagram:
                 self.logger.exception("Error processing user '%s'", user)
             finally:
                 pass
+
+    def _get_or_create_item(self, item_text: str, model_class: type, field_name: str) -> Any:
+        stmt: Select[tuple[Any]] = select(model_class).where(item_text == getattr(model_class, field_name))
+        item = self.db.scalars(stmt).one_or_none()
+        if not item:
+            item = model_class(**{field_name: item_text})
+            self.db.add(item)
+        return item
 
     def _upsert_profile_to_db(self, profile: Profile) -> DbProfile | None:
         """Creates or updates a profile record in the database."""
@@ -161,21 +194,13 @@ class Instagram:
             hashtags = []
             if profile.biography_hashtags:
                 for tag_text in profile.biography_hashtags:
-                    tag_stmt = select(Hashtag).where(Hashtag.tag == tag_text)
-                    hashtag = self.db.scalars(tag_stmt).one_or_none()
-                    if not hashtag:
-                        hashtag = Hashtag(tag=tag_text)
-                        self.db.add(hashtag)
+                    hashtag = self._get_or_create_item(tag_text, Hashtag, "tag")
                     hashtags.append(hashtag)
 
             mentions = []
             if profile.biography_mentions:
                 for mention_username in profile.biography_mentions:
-                    mention_stmt = select(Mention).where(Mention.username == mention_username)
-                    mention = self.db.scalars(mention_stmt).one_or_none()
-                    if not mention:
-                        mention = Mention(username=mention_username)
-                        self.db.add(mention)
+                    mention = self._get_or_create_item(mention_username, Mention, "username")
                     mentions.append(mention)
 
             if db_profile:
@@ -184,7 +209,6 @@ class Instagram:
                     setattr(db_profile, key, value)
                 db_profile.hashtags = hashtags
                 db_profile.mentions = mentions
-
             else:
                 self.logger.debug("Creating new DB profile for '%s'.", username)
                 db_profile = DbProfile(username=username, **profile_data)
@@ -242,7 +266,7 @@ class Instagram:
     def _fetch_and_load_cookies(self) -> dict[str, str] | None:
         """Fetch Instagram cookies from Firefox and load them into Instaloader.
 
-        :raises OperationalError: If there's an error reading the cookie database.
+        :raises OperationalError: If there's an error, read the cookie database.
         :return: A dictionary of cookies if found, otherwise None.
         :rtype: dict[str, str] | None
         """
@@ -280,7 +304,7 @@ class Instagram:
     def _import_session(self) -> None:
         """Import session from Firefox cookies and verify login.
 
-        :raises SystemExit: If cookie DB error, no cookies found, or login fails.
+        :raises SystemExit: If cookie DB error, no cookies are found, or login fails.
         """
         self.logger.debug("Attempting to import session cookie from Firefox.")
         try:
@@ -289,8 +313,9 @@ class Instagram:
                 sys.exit("No Instagram cookies found in Firefox. Cannot proceed.")
 
             self._test_login_status()
-        except Exception:
-            self.logger.exception("Unexpected error during session import.")
+        except (OperationalError, InstaloaderException, ConnectionException):
+            self.logger.exception("Error during session import.")
+            sys.exit("Failed to import session.")
 
     def _get_instagram_profile(self, username: str) -> Profile | None:
         """Retrieve the Instaloader profile object for a given user.
@@ -314,7 +339,7 @@ class Instagram:
             self.logger.exception("Connection error retrieving profile '%s'", username)
         except InstaloaderException:
             self.logger.exception("Instaloader error retrieving profile '%s'", username)
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             self.logger.exception("Unexpected error retrieving profile '%s'.", username)
         return None
 
@@ -335,6 +360,6 @@ class Instagram:
             cookie_paths = list(Path.home().glob(pattern))
             if cookie_paths:
                 return str(cookie_paths[0])
-        except Exception:
-            self.logger.exception("Error searching for cookie file")
+        except (PermissionError, OSError):
+            self.logger.exception("Error accessing cookie file")
         return None
