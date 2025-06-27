@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Annotated
 
 import typer
@@ -5,6 +6,7 @@ from rich.console import Console
 from rich.table import Table
 from sqlalchemy.orm import Session
 
+from src import FileManager, Instagram, get_session, setup_logging
 from src.core.db import Profile, SessionLocal
 
 app = typer.Typer(
@@ -23,10 +25,30 @@ def _get_db_session() -> Session:
 
 
 @app.command(name="list", help="List all target users.")
-def list_users() -> None:
+def list_users(
+    privacy: Annotated[
+        str,
+        typer.Option(
+            "--privacy",
+            "-p",
+            help="Filter users by privacy type (public, private, all).",
+            rich_help_panel="Filtering and Sorting",
+            case_sensitive=False,
+            show_default=True,
+            show_choices=True,
+            # Callback to validate the privacy option
+            callback=lambda value: value.lower() if value else "all",
+        ),
+    ] = "all",
+) -> None:
     """Lists all public and private target users in a table from the database."""
     with _get_db_session() as db:
-        profiles = db.query(Profile).all()
+        query = db.query(Profile)
+        if privacy == "public":
+            query = query.filter(Profile.is_private.is_(False))
+        elif privacy == "private":
+            query = query.filter(Profile.is_private.is_(True))
+        profiles = query.all()
 
     table = Table(title="Target Users (from Database)")
     table.add_column("Username", style="cyan")
@@ -93,6 +115,75 @@ def remove(
             console.print(f"[bold green]Success:[/] User '[cyan]{username}[/]' removed from the database.")
         else:
             console.print(f"[bold red]Error:[/] User '[cyan]{username}[/]' not found in the database.")
+
+
+@app.command(help="Clean old downloaded files.")
+def clean(
+    days: Annotated[
+        int,
+        typer.Option(
+            "--days",
+            "-d",
+            help="Number of days old files to remove.",
+            min=1,
+            show_default=True,
+        ),
+    ] = 15,
+) -> None:
+    """Removes downloaded files older than a specified number of days."""
+    logger = setup_logging()
+    try:
+        fm = FileManager()
+        fm.remove_old_files(cutoff_delta=timedelta(days=days))
+        logger.info("Cleaned files older than %d days.", days)
+    except Exception:
+        logger.exception("An error occurred during cleaning.")
+
+
+@app.command(help="Download Instagram profiles.")
+def download(
+    privacy: Annotated[
+        str,
+        typer.Option(
+            "--privacy",
+            "-p",
+            help="Filter users by privacy type for download (public, private, all).",
+            rich_help_panel="Filtering and Sorting",
+            case_sensitive=False,
+            show_default=True,
+            show_choices=True,
+            callback=lambda value: value.lower() if value else "all",
+        ),
+    ] = "all",
+    clean_days: Annotated[
+        int,
+        typer.Option(
+            "--clean-days",
+            "-c",
+            help="Number of days old files to remove before download.",
+            min=0,
+            show_default=True,
+        ),
+    ] = 0,
+) -> None:
+    """Downloads Instagram profiles based on privacy settings."""
+    logger = setup_logging()
+    try:
+        if clean_days > 0:
+            fm = FileManager()
+            fm.remove_old_files(cutoff_delta=timedelta(days=clean_days))
+            logger.info("Cleaned files older than %d days before download.", clean_days)
+
+        with get_session() as main_db_session:
+            instagram = Instagram(
+                db=main_db_session,
+                highlights=False,
+                privacy_filter=privacy,
+            )
+            instagram.run()
+        logger.info("Instagram processing finished successfully.")
+    except Exception:
+        logger.exception("An error occurred during download.")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from platform import system
 from sqlite3 import Connection, OperationalError, connect
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from instaloader import (
     ConnectionException,
@@ -20,6 +20,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from sqlalchemy.sql.selectable import Select
 
 from src.core.db import Hashtag, Mention
 from src.core.db import Profile as DbProfile
@@ -57,6 +60,7 @@ class Instagram:
         users: set[str] | None = None,
         *,
         highlights: bool = False,
+        privacy_filter: str = "all",
     ) -> None:
         """Initialize the class with settings, configurations, and DB session.
 
@@ -66,6 +70,8 @@ class Instagram:
         :type users: Optional[set[str]]
         :param highlights: Whether to download highlights or not.
         :type highlights: bool
+        :param privacy_filter: Filter profiles by privacy type ("public", "private", "all").
+        :type privacy_filter: str
         """
         self.logger = setup_logging()
         self.db = db
@@ -77,11 +83,17 @@ class Instagram:
             self.logger.info("Using explicitly provided list of %d users.", len(self.users))
         else:
             # Fetch users from the database
-            db_profiles = self.db.query(DbProfile).all()
+            query = self.db.query(DbProfile)
+            if privacy_filter == "public":
+                query = query.filter(DbProfile.is_private.is_(False))
+            elif privacy_filter == "private":
+                query = query.filter(DbProfile.is_private.is_(True))
+            db_profiles = query.all()
             self.users = {profile.username for profile in db_profiles}
             self.logger.info(
-                "Fetched %d users from the database.",
+                "Fetched %d users from the database with privacy filter '%s'.",
                 len(self.users),
+                privacy_filter,
             )
 
         self.highlights = highlights
@@ -148,7 +160,7 @@ class Instagram:
                 pass
 
     def _get_or_create_item(self, item_text: str, model_class: type, field_name: str) -> Any:
-        stmt = select(model_class).where(item_text == getattr(model_class, field_name))
+        stmt: Select[tuple[Any]] = select(model_class).where(item_text == getattr(model_class, field_name))
         item = self.db.scalars(stmt).one_or_none()
         if not item:
             item = model_class(**{field_name: item_text})

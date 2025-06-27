@@ -1,3 +1,6 @@
+from collections.abc import Generator
+from typing import Any
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -6,7 +9,7 @@ from src.core.db import Base, Profile
 
 
 @pytest.fixture(name="db_session")
-def db_session_fixture() -> Session:
+def db_session_fixture() -> Generator[Session, Any]:
     """Fixture for a in-memory SQLite database session."""
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
@@ -56,6 +59,7 @@ def test_update_profile(db_session: Session) -> None:
     db_session.refresh(profile)
 
     updated_profile = db_session.query(Profile).filter_by(username="updateuser").first()
+    assert updated_profile is not None
     assert updated_profile.is_private
     assert updated_profile.full_name == "Update User"
 

@@ -1,3 +1,6 @@
+from collections.abc import Generator
+from typing import Any
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -10,7 +13,7 @@ runner = CliRunner()
 
 
 @pytest.fixture(name="db_session_cli")
-def db_session_cli_fixture(monkeypatch: pytest.MonkeyPatch) -> Session:
+def db_session_cli_fixture(monkeypatch: pytest.MonkeyPatch) -> Generator[Session, Any]:
     """Fixture for an in-memory SQLite database session for CLI tests."""
     engine = create_engine("sqlite:///:memory:")
     testing_session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
