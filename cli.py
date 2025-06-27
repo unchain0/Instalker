@@ -1,7 +1,9 @@
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy.orm import Session
@@ -102,19 +104,173 @@ def add(
 @app.command(help="Remove a target user.")
 def remove(
     username: Annotated[
-        str,
-        typer.Argument(..., help="The Instagram username to remove.", show_default=False),
-    ],
+        Optional[str],
+        typer.Argument(help="The Instagram username to remove (optional).", show_default=False),
+    ] = None,
 ) -> None:
     """Removes a user from the database."""
     with _get_db_session() as db:
-        profile_to_remove = db.query(Profile).filter_by(username=username).first()
+        selected_username = username
+        if not selected_username:
+            profiles = db.query(Profile.username).all()
+            usernames = [p.username for p in profiles]
+
+            if not usernames:
+                console.print("[bold red]Error:[/] No users found in the database to remove.")
+                raise typer.Exit()
+
+            username_completer = WordCompleter(usernames, ignore_case=True)
+            selected_username = prompt("Username to remove: ", completer=username_completer)
+
+        if not selected_username:
+            console.print("[bold red]Error:[/] No username provided or selected.")
+            raise typer.Exit()
+
+        profile_to_remove = db.query(Profile).filter_by(username=selected_username).first()
         if profile_to_remove:
             db.delete(profile_to_remove)
             db.commit()
-            console.print(f"[bold green]Success:[/] User '[cyan]{username}[/]' removed from the database.")
+            console.print(f"[bold green]Success:[/] User '[cyan]{selected_username}[/]' removed from the database.")
         else:
-            console.print(f"[bold red]Error:[/] User '[cyan]{username}[/]' not found in the database.")
+            console.print(f"[bold red]Error:[/] User '[cyan]{selected_username}[/]' not found in the database.")
+
+
+@app.command(help="Update a target user's information.")
+def update(
+    username: Annotated[
+        Optional[str],
+        typer.Argument(help="The Instagram username to update (optional).", show_default=False),
+    ] = None,
+    full_name: Annotated[
+        Optional[str],
+        typer.Option(
+            "--full-name",
+            "-n",
+            help="The new full name for the user.",
+            rich_help_panel="Updatable Fields",
+        ),
+    ] = None,
+    biography: Annotated[
+        Optional[str],
+        typer.Option(
+            "--biography",
+            "-b",
+            help="The new biography for the user.",
+            rich_help_panel="Updatable Fields",
+        ),
+    ] = None,
+    is_private: Annotated[
+        Optional[bool],
+        typer.Option(
+            "--private/--no-private",
+            "-p/-P",
+            help="Set the user's profile to private or public.",
+            rich_help_panel="Updatable Fields",
+        ),
+    ] = None,
+) -> None:
+    """Updates a user's information in the database.
+    If the username is not provided, it will prompt for it interactively.
+    """
+    with _get_db_session() as db:
+        selected_username = username
+        if not selected_username:
+            profiles = db.query(Profile.username).all()
+            usernames = [p.username for p in profiles]
+
+            if not usernames:
+                console.print("[bold red]Error:[/] No users found in the database to update.")
+                raise typer.Exit()
+
+            username_completer = WordCompleter(usernames, ignore_case=True)
+            selected_username = prompt("Username to update: ", completer=username_completer)
+
+        if not selected_username:
+            console.print("[bold red]Error:[/] No username provided or selected.")
+            raise typer.Exit()
+
+        profile_to_update = db.query(Profile).filter_by(username=selected_username).first()
+
+        if not profile_to_update:
+            console.print(f"[bold red]Error:[/] User '[cyan]{selected_username}[/]' not found in the database.")
+            raise typer.Exit()
+
+        updated_fields = []
+        if full_name is not None:
+            profile_to_update.full_name = full_name
+            updated_fields.append(f"Full Name to '[green]{full_name}[/]'")
+        if biography is not None:
+            profile_to_update.biography = biography
+            updated_fields.append(f"Biography to '[green]{biography}[/]'")
+        if is_private is not None:
+            profile_to_update.is_private = is_private
+            privacy_str = "Private" if is_private else "Public"
+            updated_fields.append(f"Privacy to '[magenta]{privacy_str}[/]'")
+
+        if not updated_fields:
+            console.print("[bold yellow]Warning:[/] No fields were provided to update.")
+            raise typer.Exit()
+
+        db.commit()
+        console.print(f"[bold green]Success:[/] User '[cyan]{selected_username}[/]' updated.")
+        for field in updated_fields:
+            console.print(f"  - Set {field}")
+
+
+@app.command(help="Rename a target user.")
+def rename(
+    old_username: Annotated[
+        Optional[str],
+        typer.Argument(help="The current username of the user (optional).", show_default=False),
+    ] = None,
+    new_username: Annotated[
+        str,
+        typer.Argument(help="The new username for the user.", show_default=False),
+    ] = None,
+) -> None:
+    """Renames a user in the database.
+    If the old username is not provided, it will prompt for it interactively.
+    """
+    with _get_db_session() as db:
+        selected_username = old_username
+        if not selected_username:
+            profiles = db.query(Profile.username).all()
+            usernames = [p.username for p in profiles]
+
+            if not usernames:
+                console.print("[bold red]Error:[/] No users found in the database to rename.")
+                raise typer.Exit()
+
+            username_completer = WordCompleter(usernames, ignore_case=True)
+            selected_username = prompt("Username to rename: ", completer=username_completer)
+
+        if not selected_username:
+            console.print("[bold red]Error:[/] No username provided or selected.")
+            raise typer.Exit()
+
+        if not new_username:
+            new_username = prompt("New username: ")
+            if not new_username:
+                console.print("[bold red]Error:[/] New username cannot be empty.")
+                raise typer.Exit()
+
+        profile_to_rename = db.query(Profile).filter_by(username=selected_username).first()
+
+        if not profile_to_rename:
+            console.print(f"[bold red]Error:[/] User '[cyan]{selected_username}[/]' not found in the database.")
+            raise typer.Exit()
+
+        # Check if the new username already exists
+        existing_profile = db.query(Profile).filter_by(username=new_username).first()
+        if existing_profile:
+            console.print(f"[bold red]Error:[/] User with username '[cyan]{new_username}[/]' already exists.")
+            raise typer.Exit()
+
+        profile_to_rename.username = new_username
+        db.commit()
+        console.print(
+            f"[bold green]Success:[/] User '[cyan]{selected_username}[/]' renamed to '[cyan]{new_username}[/]'."
+        )
 
 
 @app.command(help="Clean old downloaded files.")
