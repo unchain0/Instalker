@@ -1,0 +1,6 @@
+instaloader>=4.14.1
+pillow>=11.1.0
+psycopg2-binary>=2.9.10
+python-dotenv>=1.1.0
+sqlalchemy>=2.0.40
+tqdm>=4.67.1
